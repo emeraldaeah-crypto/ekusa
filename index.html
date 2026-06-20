@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>浮遊 / EKUSADATAGANAWI</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --gold: #f6cf73;
+      --deep: #03030a;
+      --cyan: #70ffe8;
+      --rose: #ff5d9e;
+      --scale: 1;
+      --progress: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--deep);
+      font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, monospace;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: #fff7d2;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(48, 255, 201, .2), transparent 28vw),
+        radial-gradient(circle at 78% 64%, rgba(152, 61, 255, .24), transparent 31vw),
+        linear-gradient(180deg, #03030a, #070014 44%, #01040c);
+    }
+
+    #abyss {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      filter: saturate(1.15) contrast(1.08);
+    }
+
+    .fixed-logo {
+      position: fixed;
+      top: clamp(14px, 3vw, 34px);
+      left: 50%;
+      z-index: 20;
+      transform: translateX(-50%);
+      width: min(92vw, 1120px);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+      pointer-events: none;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      text-shadow: 0 0 14px rgba(246, 207, 115, .85), 0 0 36px rgba(112, 255, 232, .38);
+    }
+
+    .fixed-logo::before,
+    .fixed-logo::after {
+      content: "";
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(246, 207, 115, .75), transparent);
+    }
+
+    .logo-mark {
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      color: var(--gold);
+      font-size: clamp(15px, 2.1vw, 28px);
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .logo-mark span {
+      font-size: clamp(10px, 1vw, 13px);
+      color: #b5fff4;
+    }
+
+    .float-name {
+      position: fixed;
+      z-index: 18;
+      left: clamp(14px, 3vw, 32px);
+      top: 50%;
+      transform: translateY(-50%);
+      writing-mode: vertical-rl;
+      color: #e7ffe9;
+      font-size: clamp(13px, 1.4vw, 18px);
+      text-shadow: 0 0 12px rgba(112, 255, 232, .9);
+      animation: nameDrift 5.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes nameDrift {
+      0%, 100% { translate: 0 -12px; }
+      50% { translate: 0 14px; }
+    }
+
+    .zoom-panel {
+      position: fixed;
+      right: clamp(12px, 2vw, 24px);
+      top: clamp(88px, 12vh, 140px);
+      z-index: 30;
+      display: grid;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .zoom-panel button,
+    .slide-button {
+      appearance: none;
+      border: 1px solid rgba(246, 207, 115, .55);
+      background: rgba(1, 4, 12, .48);
+      color: var(--gold);
+      width: 42px;
+      height: 42px;
+      font: 700 20px/1 "Courier New", monospace;
+      box-shadow: 0 0 20px rgba(246, 207, 115, .16), inset 0 0 14px rgba(112, 255, 232, .08);
+      cursor: pointer;
+    }
+
+    .zoom-read {
+      color: #b5fff4;
+      font-size: 11px;
+      text-align: center;
+      text-shadow: 0 0 8px #3ff;
+    }
+
+    .slide-button {
+      position: fixed;
+      top: auto;
+      bottom: clamp(22px, 5vh, 46px);
+      z-index: 30;
+      transform: none;
+      font-size: 18px;
+    }
+
+    .slide-button.left { left: clamp(12px, 2vw, 24px); }
+    .slide-button.right { right: clamp(12px, 2vw, 24px); }
+
+    .scroll-space {
+      position: relative;
+      z-index: 1;
+      height: 760vh;
+    }
+
+    .horizontal-stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+      perspective: 1000px;
+    }
+
+    .track {
+      height: 100%;
+      display: flex;
+      width: max-content;
+      transform: translate3d(calc(var(--progress) * -700vw), 0, 0);
+      transition: transform .08s linear;
+      will-change: transform;
+    }
+
+    .panel {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+    }
+
+    .panel::before {
+      content: attr(data-index);
+      position: absolute;
+      left: clamp(60px, 9vw, 130px);
+      bottom: clamp(40px, 8vh, 90px);
+      color: rgba(255, 255, 255, .13);
+      font-size: clamp(48px, 11vw, 140px);
+      line-height: .8;
+      z-index: -1;
+    }
+
+    .object {
+      position: relative;
+      width: min(68vw, 620px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      transform: scale(var(--scale)) rotateX(var(--tilt, 0deg));
+      transition: transform .35s ease, filter .35s ease;
+      filter: drop-shadow(0 0 26px rgba(112, 255, 232, .28));
+    }
+
+    .painting {
+      width: 60%;
+      aspect-ratio: 4 / 5;
+      border: 1px solid rgba(246, 207, 115, .7);
+      background:
+        linear-gradient(130deg, transparent 0 28%, rgba(255, 255, 255, .18) 29% 31%, transparent 32%),
+        radial-gradient(circle at 36% 28%, var(--c1), transparent 24%),
+        radial-gradient(circle at 65% 66%, var(--c2), transparent 29%),
+        conic-gradient(from 30deg, #080713, var(--c3), #101826, #03030a, var(--c1), #080713);
+      box-shadow:
+        0 0 0 10px rgba(2, 2, 10, .9),
+        0 0 0 12px rgba(246, 207, 115, .42),
+        0 0 46px rgba(246, 207, 115, .28);
+      animation: paintingFloat 6s ease-in-out infinite;
+    }
+
+    .relic {
+      width: 56%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 48% 38%, rgba(255, 255, 255, .9), transparent 4%),
+        radial-gradient(circle at 42% 48%, var(--c1), transparent 17%),
+        radial-gradient(circle at 55% 60%, var(--c2), transparent 24%),
+        radial-gradient(circle at 50% 50%, #090a18 0 40%, var(--c3) 41% 44%, transparent 45%);
+      box-shadow: inset 0 0 42px rgba(0, 0, 0, .65), 0 0 58px rgba(112, 255, 232, .3);
+      animation: relicPulse 4.8s ease-in-out infinite;
+    }
+
+    .photo-print {
+      width: 64%;
+      aspect-ratio: 3 / 4;
+      border: 1px solid rgba(255, 255, 255, .36);
+      padding: 4%;
+      background: #e9e2d4;
+      box-shadow: 0 22px 80px rgba(0, 0, 0, .55), 0 0 35px rgba(246, 207, 115, .22);
+      rotate: -1.5deg;
+    }
+
+    .photo-print .image {
+      height: 82%;
+      background:
+        linear-gradient(transparent 0 70%, rgba(255, 255, 255, .38)),
+        radial-gradient(circle at 38% 36%, #f6cf73, transparent 8%),
+        radial-gradient(circle at 58% 52%, #111, transparent 28%),
+        radial-gradient(circle at 42% 70%, #c73d44, transparent 20%),
+        linear-gradient(150deg, #16263d, #0b0813 45%, #63224f);
+      image-rendering: pixelated;
+    }
+
+    .character {
+      width: min(36vw, 280px);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      font-size: clamp(84px, 15vw, 170px);
+      color: #ffe9a3;
+      text-shadow: 0 0 20px rgba(246, 207, 115, .85), 0 0 58px rgba(255, 93, 158, .34);
+      animation: characterSwim 5s ease-in-out infinite;
+    }
+
+    .altar-text {
+      position: absolute;
+      left: 50%;
+      bottom: clamp(52px, 12vh, 118px);
+      z-index: 6;
+      width: min(86vw, 760px);
+      transform: translate(-50%, 26px) scale(.96);
+      opacity: 0;
+      text-align: center;
+      transition: opacity .65s ease, transform .65s ease, filter .65s ease;
+      color: var(--gold);
+      text-shadow: 0 0 10px rgba(246, 207, 115, .9), 0 0 32px rgba(255, 93, 158, .26);
+      pointer-events: none;
+    }
+
+    .panel.is-active .altar-text {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+      filter: brightness(1.15);
+    }
+
+    .altar-text h2 {
+      margin: 0 0 8px;
+      font-size: clamp(20px, 5vw, 64px);
+      line-height: .95;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .altar-text p {
+      margin: 0 auto;
+      max-width: 58ch;
+      color: #fff7d2;
+      font-size: clamp(12px, 1.55vw, 18px);
+      line-height: 1.65;
+    }
+
+    .price {
+      display: inline-block;
+      margin-top: 10px;
+      color: #b5fff4;
+      font-size: clamp(13px, 1.5vw, 18px);
+    }
+
+    .flame-rail {
+      position: fixed;
+      z-index: 24;
+      left: 50%;
+      bottom: clamp(18px, 4vh, 38px);
+      transform: translateX(-50%);
+      width: min(92vw, 720px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .flame-label {
+      color: var(--gold);
+      font-size: clamp(11px, 1.25vw, 15px);
+      text-align: center;
+      text-shadow: 0 0 12px rgba(246, 207, 115, .75);
+    }
+
+    .pixel-flame {
+      width: 42px;
+      height: 58px;
+      image-rendering: pixelated;
+      background:
+        linear-gradient(90deg, transparent 0 25%, #ffea74 25% 48%, #fff3a8 48% 58%, #ff9c2f 58% 75%, transparent 75%),
+        linear-gradient(90deg, transparent 0 14%, #ff4b25 14% 32%, #ffea74 32% 64%, #ff7a1c 64% 86%, transparent 86%),
+        linear-gradient(90deg, transparent 0 22%, #be1d2f 22% 74%, transparent 74%);
+      background-size: 100% 20px, 100% 28px, 100% 22px;
+      background-position: 0 0, 0 18px, 0 40px;
+      background-repeat: no-repeat;
+      clip-path: polygon(50% 0, 78% 18%, 70% 38%, 96% 57%, 78% 100%, 20% 100%, 4% 56%, 31% 38%, 24% 16%);
+      filter: drop-shadow(0 0 10px #ff4b25) drop-shadow(0 0 24px #ffb12f);
+      animation: flameJitter .28s steps(2, end) infinite;
+    }
+
+    .drifter {
+      position: absolute;
+      z-index: 3;
+      color: #b5fff4;
+      opacity: .72;
+      font-size: clamp(18px, 3vw, 40px);
+      text-shadow: 0 0 16px rgba(112, 255, 232, .86);
+      animation: driftAcross var(--speed) linear infinite;
+      top: var(--top);
+      left: -20vw;
+    }
+
+    .random-words {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      opacity: .72;
+    }
+
+    .random-words span {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      color: rgba(255, 247, 210, .42);
+      font-size: clamp(10px, 1.2vw, 15px);
+      transform: rotate(var(--r));
+      text-shadow: 0 0 8px rgba(246, 207, 115, .32);
+    }
+
+    .contact {
+      min-height: 100vh;
+      position: relative;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      padding: 80px 20px;
+      text-align: center;
+    }
+
+    .contact h2 {
+      color: var(--gold);
+      font-size: clamp(36px, 10vw, 120px);
+      margin: 0 0 18px;
+      text-shadow: 0 0 24px rgba(246, 207, 115, .8);
+    }
+
+    .contact a {
+      color: #b5fff4;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(181, 255, 244, .55);
+      font-size: clamp(15px, 2vw, 24px);
+    }
+
+    @keyframes paintingFloat {
+      0%, 100% { transform: translateY(-12px) rotate(-2deg); }
+      50% { transform: translateY(18px) rotate(2deg); }
+    }
+
+    @keyframes relicPulse {
+      0%, 100% { transform: scale(.96); filter: hue-rotate(0deg); }
+      50% { transform: scale(1.05); filter: hue-rotate(34deg); }
+    }
+
+    @keyframes characterSwim {
+      0%, 100% { transform: translate(-18px, -14px) rotate(-7deg); }
+      50% { transform: translate(24px, 18px) rotate(8deg); }
+    }
+
+    @keyframes flameJitter {
+      0% { transform: translateY(0) scaleX(1); }
+      100% { transform: translateY(-3px) scaleX(.92); }
+    }
+
+    @keyframes driftAcross {
+      from { transform: translateX(0) translateY(0) rotate(0deg); }
+      to { transform: translateX(140vw) translateY(-10vh) rotate(360deg); }
+    }
+
+    @media (max-width: 720px) {
+      .object {
+        width: min(88vw, 520px);
+      }
+
+      .zoom-panel {
+        top: auto;
+        bottom: 104px;
+      }
+
+      .slide-button {
+        bottom: 54px;
+      }
+
+      .slide-button.right {
+        bottom: 54px;
+      }
+
+      .float-name {
+        opacity: .72;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="abyss" aria-hidden="true"></canvas>
+
+  <header class="fixed-logo" aria-label="EKUSADATAGANAWI">
+    <div class="logo-mark">EKUSADATAGANAWI<span>浮遊 / ABYSS SHOP</span></div>
+  </header>
+
+  <div class="float-name">なまえ 浮遊</div>
+
+  <nav class="zoom-panel" aria-label="拡大">
+    <button type="button" data-zoom="in" aria-label="拡大">+</button>
+    <div class="zoom-read" id="zoomRead">100%</div>
+    <button type="button" data-zoom="out" aria-label="縮小">-</button>
+  </nav>
+  <button class="slide-button left" type="button" data-slide="-1" aria-label="左へ">‹</button>
+  <button class="slide-button right" type="button" data-slide="1" aria-label="右へ">›</button>
+
+  <div class="flame-rail" aria-hidden="true">
+    <div class="pixel-flame"></div>
+    <div class="flame-label">TEXT APPEARS / ALTAR / CONTACT AT END</div>
+    <div class="pixel-flame"></div>
+  </div>
+
+  <main>
+    <section class="scroll-space" id="scrollSpace">
+      <div class="horizontal-stage">
+        <div class="track" id="track">
+          <article class="panel" data-index="001">
+            <div class="random-words"></div>
+            <div class="object" style="--c1:#70ffe8;--c2:#ff5d9e;--c3:#1d3fff;">
+              <div class="painting"></div>
+            </div>
+            <div class="altar-text">
+              <h2>浮遊</h2>
+              <p>たてスクロールでよこへ進む。宇宙の奥から、絵と文字がランダムに近づいてくる。</p>
+            </div>
+            <span class="drifter" style="--top:22%;--speed:18s;">◇</span>
+          </article>
+
+          <article class="panel" data-index="002">
+            <div class="random-words"></div>
+            <div class="object" style="--c1:#f6cf73;--c2:#70ffe8;--c3:#41149e;--tilt:8deg;">
+              <div class="relic"></div>
+            </div>
+            <div class="altar-text">
+              <h2>ABYSS</h2>
+              <p>アビス背景はゆらゆら。右にも左にも進める。えくさのうしろを通過するオブジェ。</p>
+            </div>
+            <span class="drifter" style="--top:72%;--speed:22s;">✦</span>
+          </article>
+
+          <article class="panel" data-index="003">
+            <div class="random-words"></div>
+            <div class="object" style="--c1:#ff944d;--c2:#243cff;--c3:#68ffe0;">
+              <div class="photo-print"><div class="image"></div></div>
+            </div>
+            <div class="altar-text">
+              <h2>写真 / 版画</h2>
+              <p>暗い宇宙に浮かぶ紙。中央に来た時だけ金色のテキストが浮かび上がる。</p>
+              <span class="price">¥300,000</span>
+            </div>
+            <span class="drifter" style="--top:34%;--speed:16s;">+</span>
+          </article>
+
+          <article class="panel" data-index="004">
+            <div class="random-words"></div>
+            <div class="object" style="--c1:#c8ff5b;--c2:#ff5d9e;--c3:#071e1b;">
+              <div class="character">え</div>
+            </div>
+            <div class="altar-text">
+              <h2>えくさ</h2>
+              <p>キャラクターとオブジェが左右に動く。ロゴは動かない。炎はずっと自分についてくる。</p>
+            </div>
+            <span class="drifter" style="--top:18%;--speed:24s;">ゑ</span>
+          </article>
+
+          <article class="panel" data-index="005">
+            <div class="random-words"></div>
+            <div class="object" style="--c1:#5bf2ff;--c2:#ffdd72;--c3:#5f1c7a;">
+              <div class="painting"></div>
+            </div>
+            <div class="altar-text">
+              <h2>ランダム絵画</h2>
+              <p>もじ、絵画、ランダム。小さな断片がひかりながら背景の深いところを泳ぐ。</p>
+            </div>
+            <span class="drifter" style="--top:62%;--speed:19s;">※</span>
+          </article>
+
+          <article class="panel" data-index="006">
+            <div class="random-words"></div>
+            <div class="object" style="--c1:#e2ffaf;--c2:#8a59ff;--c3:#ff3b74;--tilt:-8deg;">
+              <div class="relic"></div>
+            </div>
+            <div class="altar-text">
+              <h2>MEGA ZOOM</h2>
+              <p>拡大ボタンでめちゃくちゃ拡大できる。近づきすぎると宇宙は粒になる。</p>
+            </div>
+            <span class="drifter" style="--top:44%;--speed:15s;">⬡</span>
+          </article>
+
+          <article class="panel" data-index="007">
+            <div class="random-words"></div>
+            <div class="object" style="--c1:#70ffe8;--c2:#f6cf73;--c3:#0b0f33;">
+              <div class="photo-print"><div class="image"></div></div>
+            </div>
+            <div class="altar-text">
+              <h2>CONTACT</h2>
+              <p>文末にこんたくと。宇宙の横スライドの終点に、静かな入口だけ残る。</p>
+            </div>
+            <span class="drifter" style="--top:28%;--speed:17s;">◎</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div>
+        <h2>こんたくと</h2>
+        <a href="mailto:contact@example.com">contact@example.com</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("abyss");
+    const ctx = canvas.getContext("2d");
+    const root = document.documentElement;
+    const scrollSpace = document.getElementById("scrollSpace");
+    const panels = [...document.querySelectorAll(".panel")];
+    const zoomRead = document.getElementById("zoomRead");
+    let width = 0;
+    let height = 0;
+    let scale = 1;
+    let stars = [];
+    const maxShift = panels.length - 1;
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      stars = Array.from({ length: Math.floor(width * height / 5200) }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 1.8 + .25,
+        p: Math.random() * Math.PI * 2,
+        s: Math.random() * .45 + .12
+      }));
+      updateScroll();
+    }
+
+    function draw(time) {
+      const t = time * .001;
+      ctx.clearRect(0, 0, width, height);
+      const wave = ctx.createRadialGradient(
+        width * (.5 + Math.sin(t * .13) * .08),
+        height * (.48 + Math.cos(t * .11) * .08),
+        10,
+        width * .5,
+        height * .5,
+        Math.max(width, height) * .82
+      );
+      wave.addColorStop(0, "rgba(112,255,232,.18)");
+      wave.addColorStop(.34, "rgba(118,44,190,.18)");
+      wave.addColorStop(.68, "rgba(255,93,158,.08)");
+      wave.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = wave;
+      ctx.fillRect(0, 0, width, height);
+
+      for (const star of stars) {
+        const flicker = .45 + Math.sin(t * (1.5 + star.s) + star.p) * .35;
+        const x = (star.x + Math.sin(t * star.s + star.p) * 18 + width) % width;
+        const y = (star.y + Math.cos(t * star.s + star.p) * 10 + height) % height;
+        ctx.fillStyle = `rgba(255,247,210,${Math.max(.12, flicker)})`;
+        ctx.fillRect(x, y, star.r, star.r);
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    function updateScroll() {
+      const rect = scrollSpace.getBoundingClientRect();
+      const scrollable = scrollSpace.offsetHeight - window.innerHeight;
+      const raw = Math.min(1, Math.max(0, -rect.top / scrollable));
+      root.style.setProperty("--progress", raw);
+      const activeIndex = Math.round(raw * maxShift);
+      panels.forEach((panel, index) => {
+        panel.classList.toggle("is-active", index === activeIndex);
+      });
+    }
+
+    function setZoom(next) {
+      scale = Math.min(7, Math.max(.38, next));
+      root.style.setProperty("--scale", scale.toFixed(2));
+      zoomRead.textContent = Math.round(scale * 100) + "%";
+    }
+
+    function slide(direction) {
+      const rect = scrollSpace.getBoundingClientRect();
+      const scrollable = scrollSpace.offsetHeight - window.innerHeight;
+      const current = Math.round(Math.min(1, Math.max(0, -rect.top / scrollable)) * maxShift);
+      const target = Math.min(maxShift, Math.max(0, current + direction));
+      const y = scrollSpace.offsetTop + (target / maxShift) * scrollable;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+
+    function seedWords() {
+      const words = ["浮遊", "abyss", "えくさ", "random", "painting", "photo", "print", "¥300000", "altar", "gold", "program", "cosmos"];
+      document.querySelectorAll(".random-words").forEach((field, panelIndex) => {
+        field.innerHTML = "";
+        for (let i = 0; i < 14; i += 1) {
+          const span = document.createElement("span");
+          span.textContent = words[(i + panelIndex * 3) % words.length];
+          span.style.setProperty("--x", Math.random() * 88 + 4 + "%");
+          span.style.setProperty("--y", Math.random() * 78 + 10 + "%");
+          span.style.setProperty("--r", Math.random() * 80 - 40 + "deg");
+          field.appendChild(span);
+        }
+      });
+    }
+
+    document.querySelectorAll("[data-zoom]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setZoom(scale * (button.dataset.zoom === "in" ? 1.45 : .69));
+      });
+    });
+
+    document.querySelectorAll("[data-slide]").forEach((button) => {
+      button.addEventListener("click", () => slide(Number(button.dataset.slide)));
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "+" || event.key === "=") setZoom(scale * 1.25);
+      if (event.key === "-" || event.key === "_") setZoom(scale * .8);
+      if (event.key === "ArrowRight") slide(1);
+      if (event.key === "ArrowLeft") slide(-1);
+    });
+
+    window.addEventListener("wheel", (event) => {
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        setZoom(scale * (event.deltaY < 0 ? 1.12 : .89));
+      }
+    }, { passive: false });
+
+    window.addEventListener("scroll", updateScroll, { passive: true });
+    window.addEventListener("resize", resize);
+    seedWords();
+    resize();
+    setZoom(1);
+    requestAnimationFrame(draw);
+  </script>
+</body>
+</html>
