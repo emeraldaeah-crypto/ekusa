@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>EKUSADATAGANAWI / ABYSS SHOP</title>
+  <title>EKUSADATAGANAWI</title>
   <style>
     :root {
       color-scheme: dark;
@@ -61,10 +61,9 @@
       z-index: 20;
       transform: translateX(-50%);
       width: min(92vw, 1120px);
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 16px;
       pointer-events: none;
       text-transform: uppercase;
       letter-spacing: 0;
@@ -73,26 +72,22 @@
 
     .fixed-logo::before,
     .fixed-logo::after {
-      content: "";
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(246, 207, 115, .36), transparent);
+      display: none;
     }
 
     .logo-mark {
       display: grid;
       justify-items: center;
-      gap: 4px;
       color: var(--gold);
       font-size: clamp(15px, 2.1vw, 28px);
+      font-weight: 400;
       line-height: 1;
       white-space: nowrap;
       text-shadow: none;
     }
 
     .logo-mark span {
-      font-size: clamp(10px, 1vw, 13px);
-      color: #b5fff4;
-      text-shadow: none;
+      display: none;
     }
 
     .zoom-panel {
@@ -105,8 +100,7 @@
       pointer-events: auto;
     }
 
-    .zoom-panel button,
-    .slide-button {
+    .zoom-panel button {
       appearance: none;
       border: 1px solid rgba(246, 207, 115, .55);
       background: rgba(1, 4, 12, .48);
@@ -124,18 +118,6 @@
       text-align: center;
       text-shadow: 0 0 8px #3ff;
     }
-
-    .slide-button {
-      position: fixed;
-      top: auto;
-      bottom: clamp(22px, 5vh, 46px);
-      z-index: 30;
-      transform: none;
-      font-size: 18px;
-    }
-
-    .slide-button.left { left: clamp(12px, 2vw, 24px); }
-    .slide-button.right { right: clamp(12px, 2vw, 24px); }
 
     .scroll-space {
       position: relative;
@@ -340,7 +322,7 @@
       margin: 0 0 8px;
       font-size: clamp(20px, 5vw, 64px);
       line-height: .95;
-      font-weight: 700;
+      font-weight: 400;
       letter-spacing: 0;
       text-transform: uppercase;
     }
@@ -392,6 +374,7 @@
       background-size: 100% 100%;
       background-position: center;
       background-repeat: no-repeat;
+      border-radius: 44% 56% 48% 52% / 52% 50% 42% 48%;
       filter: drop-shadow(0 0 14px rgba(255, 77, 28, .85)) drop-shadow(0 0 42px rgba(255, 179, 47, .62)) drop-shadow(0 0 80px rgba(255, 61, 28, .28));
       transform-origin: 50% 100%;
       animation: flameBody 2.2s ease-in-out infinite;
@@ -411,6 +394,7 @@
       background-size: 100% 100%;
       background-position: center;
       background-repeat: no-repeat;
+      border-radius: 48% 52% 46% 54% / 58% 44% 50% 42%;
       opacity: .82;
       animation: innerFlame 1.7s ease-in-out infinite;
     }
@@ -432,6 +416,22 @@
         -3px -42px 0 rgba(255, 121, 24, .42);
       opacity: .85;
       animation: emberDissolve 1.9s ease-in-out infinite;
+    }
+
+    .pixel-flame .flame-base {
+      position: absolute;
+      left: 11px;
+      bottom: 0;
+      width: 52px;
+      height: 30px;
+      background:
+        radial-gradient(circle at 20% 62%, rgba(255, 73, 31, .46) 0 14%, transparent 15%),
+        radial-gradient(circle at 48% 70%, rgba(255, 193, 69, .36) 0 18%, transparent 19%),
+        radial-gradient(circle at 74% 54%, rgba(155, 18, 42, .38) 0 14%, transparent 15%);
+      filter: blur(.6px);
+      opacity: .8;
+      transform-origin: 50% 80%;
+      animation: baseMelt 1.35s ease-in-out infinite;
     }
 
     .flame-particle {
@@ -479,6 +479,12 @@
       72% { transform: translate(4px, -18px) scale(.72, .48); opacity: .34; }
     }
 
+    @keyframes baseMelt {
+      0%, 100% { transform: translateX(0) scale(1, .86); opacity: .72; }
+      38% { transform: translateX(-4px) scale(.82, 1.08); opacity: .42; }
+      70% { transform: translateX(5px) scale(1.16, .72); opacity: .64; }
+    }
+
     @keyframes emberDissolve {
       0% { transform: translate(0, 0) scale(1); opacity: 0; filter: blur(0); }
       12% { opacity: .72; }
@@ -510,14 +516,6 @@
         bottom: 104px;
       }
 
-      .slide-button {
-        bottom: 54px;
-      }
-
-      .slide-button.right {
-        bottom: 54px;
-      }
-
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -533,7 +531,7 @@
   <canvas id="abyss" aria-hidden="true"></canvas>
 
   <header class="fixed-logo" aria-label="EKUSADATAGANAWI">
-    <div class="logo-mark">EKUSADATAGANAWI<span>ABYSS SHOP</span></div>
+    <div class="logo-mark">EKUSADATAGANAWI</div>
   </header>
 
   <nav class="zoom-panel" aria-label="Zoom">
@@ -541,13 +539,10 @@
     <div class="zoom-read" id="zoomRead">100%</div>
     <button type="button" data-zoom="out" aria-label="Zoom out">-</button>
   </nav>
-  <button class="slide-button left" type="button" data-slide="-1" aria-label="Previous slide">‹</button>
-  <button class="slide-button right" type="button" data-slide="1" aria-label="Next slide">›</button>
-
   <div class="flame-rail" aria-hidden="true">
-    <div class="pixel-flame"></div>
+    <div class="pixel-flame"><span class="flame-base"></span></div>
     <div class="flame-label">TEXT APPEARS / ALTAR / ENDLESS ABYSS</div>
-    <div class="pixel-flame"></div>
+    <div class="pixel-flame"><span class="flame-base"></span></div>
   </div>
 
   <main>
