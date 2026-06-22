@@ -16,7 +16,7 @@
       --slide-shift: 0vw;
       --parallax-x: 0;
       --parallax-y: 0;
-      --code-font: "SF Mono", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace;
+      --code-font: "SF Mono", "SFMono-Regular", "Menlo", "Monaco", "Cascadia Code", "Fira Code", "JetBrains Mono", "Consolas", "Liberation Mono", "Courier New", monospace;
     }
 
     * {
@@ -84,9 +84,10 @@
       color: var(--gold);
       font-size: clamp(15px, 2.1vw, 28px);
       font-weight: 400;
+      font-family: var(--code-font);
       line-height: 1;
       white-space: nowrap;
-      text-shadow: none;
+      text-shadow: 0 0 6px rgba(246, 207, 115, .38), 0 0 18px rgba(246, 207, 115, .2);
     }
 
     .logo-mark span {
@@ -152,8 +153,7 @@
       height: 100%;
       display: flex;
       width: max-content;
-      transform: translate3d(var(--slide-shift), 0, 0);
-      transition: transform .08s linear;
+      transform: translate3d(0, 0, 0);
       will-change: transform;
     }
 
@@ -336,6 +336,7 @@
     .altar-text h2 {
       margin: 0 0 8px;
       font-size: clamp(20px, 5vw, 64px);
+      font-family: var(--code-font);
       line-height: .95;
       font-weight: 400;
       letter-spacing: 0;
@@ -356,10 +357,68 @@
 
     .price {
       display: inline-block;
-      margin-top: 10px;
+      margin-top: 12px;
+      padding: 2px 8px;
       color: #b5fff4;
       font-size: clamp(13px, 1.5vw, 18px);
-      text-transform: uppercase;
+      text-transform: none;
+      background: rgba(3, 3, 10, .54);
+      border: 1px solid rgba(181, 255, 244, .22);
+    }
+
+    @media (min-width: 900px) {
+      .object {
+        width: min(32vw, 320px);
+        transform: translateY(-22vh) scale(var(--scale)) rotateX(var(--tilt, 0deg));
+      }
+
+      .altar-text {
+        bottom: clamp(86px, 11vh, 110px);
+        width: min(76vw, 860px);
+      }
+
+      .altar-text h2 {
+        font-size: clamp(24px, 2.8vw, 38px);
+        margin-bottom: 6px;
+      }
+
+      .altar-text p {
+        max-width: 62ch;
+        font-size: clamp(10px, .82vw, 12px);
+        line-height: 1.4;
+      }
+
+      .price {
+        margin-top: 8px;
+        font-size: clamp(11px, .9vw, 13px);
+      }
+    }
+
+    @media (min-width: 680px) and (max-width: 899px) {
+      .object {
+        width: min(52vw, 400px);
+        transform: translateY(-14vh) scale(var(--scale)) rotateX(var(--tilt, 0deg));
+      }
+
+      .altar-text {
+        bottom: clamp(72px, 9vh, 96px);
+        width: min(82vw, 700px);
+      }
+
+      .altar-text h2 {
+        font-size: clamp(22px, 4vw, 34px);
+      }
+
+      .altar-text p {
+        max-width: 64ch;
+        font-size: 10px;
+        line-height: 1.38;
+      }
+
+      .price {
+        margin-top: 7px;
+        font-size: 11px;
+      }
     }
 
     .flame-rail {
@@ -594,7 +653,7 @@
             <div class="altar-text">
               <h2>NYX</h2>
               <p>Born from the first night, this work opens like a field recording of darkness: thin gold syntax, slow signals, and a <span class="accent-blue">blue undercurrent</span> moving behind the surface. It is not a single image so much as a suspended interval, a coded altar where distance keeps folding back into itself and the viewer feels the room become wider than the screen. The painting is meant to be watched slowly, as if the black field were breathing through layers of mineral dust, old monitor light, and a private astronomical notation.</p>
-              <span class="price">ASK</span>
+              <span class="price">ask</span>
             </div>
             <span class="drifter" style="--top:22%;--speed:18s;">◇</span>
           </article>
@@ -607,7 +666,7 @@
             <div class="altar-text">
               <h2>CHAOS</h2>
               <p>Chaos is treated here as the original space before names, before edges, before a stable horizon. The painting holds still while the layers behind it move in different directions, creating the sense that a <span class="accent-lime">fluorescent green fault line</span> is opening under the stars and the image is only temporarily balanced above it. The long text belongs to the work like a console report from a place that has not finished becoming a place yet.</p>
-              <span class="price">ASK</span>
+              <span class="price">ask</span>
             </div>
             <span class="drifter" style="--top:72%;--speed:22s;">✦</span>
           </article>
@@ -633,7 +692,7 @@
             <div class="altar-text">
               <h2>HERMES</h2>
               <p>Hermes carries the message sideways, never straight, slipping between the artwork, the interface, and the viewer's hand. The text behaves like a transmission log: mostly gold, occasionally interrupted by <span class="accent-blue">electric blue notation</span>, while the flames below keep appearing and vanishing like packets of heat in a game world. It is a messenger piece, but the message is delayed on purpose, stretched into a corridor where reading and scrolling become the same ritual.</p>
-              <span class="price">ASK</span>
+              <span class="price">ask</span>
             </div>
             <span class="drifter" style="--top:18%;--speed:24s;">E</span>
           </article>
@@ -646,7 +705,7 @@
             <div class="altar-text">
               <h2>ISIS</h2>
               <p>Isis gathers broken color into a protective field. The image is quiet, but the surrounding space is not: small parallax layers pull in vertical and horizontal directions at once, and a <span class="accent-lime">green pulse</span> appears like a hidden restoration spell written in programming font. The longer the viewer stays with it, the more the painting feels less like an object and more like an instruction for holding fragments together without fully repairing them.</p>
-              <span class="price">ASK</span>
+              <span class="price">ask</span>
             </div>
             <span class="drifter" style="--top:62%;--speed:19s;">※</span>
           </article>
@@ -659,7 +718,7 @@
             <div class="altar-text">
               <h2>HELIOS</h2>
               <p>Helios is the eye of scale. At one hundred percent it reads as a painting, but at one percent it becomes a distant artifact, almost lost inside the field; at extreme magnification it turns into texture, grain, and coded weather. The gold typography stays calm while <span class="accent-orange">solar orange</span> leaks through the abstract surface. This work is about distance as a material: the small version is not a thumbnail, it is a faraway body.</p>
-              <span class="price">ASK</span>
+              <span class="price">ask</span>
             </div>
             <span class="drifter" style="--top:44%;--speed:15s;">⬡</span>
           </article>
@@ -672,7 +731,7 @@
             <div class="altar-text">
               <h2>ANUBIS</h2>
               <p>Anubis marks no ending. The sequence loops both left and right, sending each painting past the viewer as if weighed, archived, and released again into the same infinite corridor. The background parallax moves like a dark river, and the gold text returns with small flashes of <span class="accent-blue">blue</span>, <span class="accent-lime">acid green</span>, and <span class="accent-orange">ember orange</span>. The work refuses a final door; it keeps the viewer inside a measured passage, where every image has already passed once and is still arriving.</p>
-              <span class="price">ASK</span>
+              <span class="price">ask</span>
             </div>
             <span class="drifter" style="--top:28%;--speed:17s;">◎</span>
           </article>
@@ -708,6 +767,9 @@
     let movementTimer = 0;
     let lastBurstAt = 0;
     let lastScrollY = 0;
+    let starTime = 0;
+    let targetShiftVw = 0;
+    let displayedShiftVw = 0;
 
     function wrap(value, size) {
       return ((value % size) + size) % size;
@@ -757,11 +819,17 @@
       drawScene();
     }
 
-    function drawScene() {
+    function drawScene(time = 0) {
+      starTime = time * .001;
+      displayedShiftVw += (targetShiftVw - displayedShiftVw) * .13;
+      if (Math.abs(targetShiftVw - displayedShiftVw) < .01) {
+        displayedShiftVw = targetShiftVw;
+      }
+      track.style.transform = `translate3d(${displayedShiftVw}vw, 0, 0)`;
       ctx.clearRect(0, 0, width, height);
       const wave = ctx.createRadialGradient(
-        width * (.5 + Math.sin(parallaxX * .07) * .12),
-        height * (.48 + Math.cos(parallaxY * .08) * .12),
+        width * (.5 + Math.sin(parallaxX * .07 + starTime * .04) * .12),
+        height * (.48 + Math.cos(parallaxY * .08 + starTime * .035) * .12),
         10,
         width * .5,
         height * .5,
@@ -788,13 +856,19 @@
       ctx.fillRect(0, 0, width, height);
 
       for (const star of stars) {
-        const flicker = .45 + Math.sin(parallaxX * .23 + parallaxY * .19 + star.p) * .35;
-        const x = wrap(star.x - parallaxX * star.depth * 19 + parallaxY * star.depth * 3, width);
-        const y = wrap(star.y - parallaxY * star.depth * 32 + Math.sin(parallaxX * .12 + star.p) * star.depth * 13, height);
+        const slowDrift = starTime * star.depth;
+        const flicker = .45 + Math.sin(starTime * (.22 + star.s) + parallaxX * .23 + parallaxY * .19 + star.p) * .35;
+        const x = wrap(star.x - parallaxX * star.depth * 19 + parallaxY * star.depth * 3 + Math.sin(starTime * .08 + star.p) * star.depth * 11, width);
+        const y = wrap(star.y - parallaxY * star.depth * 32 - slowDrift * 5 + Math.sin(parallaxX * .12 + star.p) * star.depth * 13, height);
         const color = star.hue === "cyan" ? "112,247,255" : star.hue === "gold" ? "246,207,115" : "255,247,210";
         ctx.fillStyle = `rgba(${color},${Math.max(.1, flicker / star.depth)})`;
         ctx.fillRect(x, y, star.r, star.r);
       }
+    }
+
+    function animateBackground(time) {
+      drawScene(time);
+      requestAnimationFrame(animateBackground);
     }
 
     function updateScroll() {
@@ -802,7 +876,8 @@
       const scrollable = scrollSpace.offsetHeight - window.innerHeight;
       const raw = Math.min(1, Math.max(0, -rect.top / scrollable));
       root.style.setProperty("--progress", raw);
-      root.style.setProperty("--slide-shift", `${raw * maxShift * -100}vw`);
+      targetShiftVw = raw * maxShift * -100;
+      root.style.setProperty("--slide-shift", `${targetShiftVw}vw`);
       currentFloat = raw * maxShift;
       parallaxX = currentFloat;
       parallaxY = window.scrollY / Math.max(1, window.innerHeight);
@@ -947,6 +1022,7 @@
     lastScrollY = window.scrollY;
     interactionsReady = true;
     igniteFlames();
+    requestAnimationFrame(animateBackground);
   </script>
 </body>
 </html>
