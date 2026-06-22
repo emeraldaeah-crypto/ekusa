@@ -87,7 +87,7 @@
       font-family: var(--code-font);
       line-height: 1;
       white-space: nowrap;
-      text-shadow: 0 0 6px rgba(246, 207, 115, .38), 0 0 18px rgba(246, 207, 115, .2);
+      text-shadow: 0 0 7px rgba(246, 207, 115, .58), 0 0 22px rgba(246, 207, 115, .34), 0 0 44px rgba(246, 207, 115, .18);
     }
 
     .logo-mark span {
@@ -357,19 +357,19 @@
 
     .price {
       display: inline-block;
-      margin-top: 12px;
-      padding: 2px 8px;
+      margin-top: 8px;
+      padding: 0;
       color: #b5fff4;
       font-size: clamp(13px, 1.5vw, 18px);
       text-transform: none;
-      background: rgba(3, 3, 10, .54);
-      border: 1px solid rgba(181, 255, 244, .22);
+      background: transparent;
+      border: 0;
     }
 
     @media (min-width: 900px) {
       .object {
-        width: min(32vw, 320px);
-        transform: translateY(-22vh) scale(var(--scale)) rotateX(var(--tilt, 0deg));
+        width: min(30vw, 300px);
+        transform: translateY(-20vh) scale(var(--scale)) rotateX(var(--tilt, 0deg));
       }
 
       .altar-text {
@@ -378,19 +378,19 @@
       }
 
       .altar-text h2 {
-        font-size: clamp(24px, 2.8vw, 38px);
+        font-size: clamp(20px, 2.25vw, 31px);
         margin-bottom: 6px;
       }
 
       .altar-text p {
-        max-width: 62ch;
-        font-size: clamp(10px, .82vw, 12px);
-        line-height: 1.4;
+        max-width: 60ch;
+        font-size: clamp(9px, .72vw, 10.5px);
+        line-height: 1.34;
       }
 
       .price {
-        margin-top: 8px;
-        font-size: clamp(11px, .9vw, 13px);
+        margin-top: 6px;
+        font-size: clamp(9px, .72vw, 10.5px);
       }
     }
 
@@ -406,18 +406,18 @@
       }
 
       .altar-text h2 {
-        font-size: clamp(22px, 4vw, 34px);
+        font-size: clamp(20px, 3.5vw, 29px);
       }
 
       .altar-text p {
-        max-width: 64ch;
-        font-size: 10px;
-        line-height: 1.38;
+        max-width: 60ch;
+        font-size: 9.5px;
+        line-height: 1.34;
       }
 
       .price {
-        margin-top: 7px;
-        font-size: 11px;
+        margin-top: 5px;
+        font-size: 9.5px;
       }
     }
 
