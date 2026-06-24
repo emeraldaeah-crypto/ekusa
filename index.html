@@ -16,6 +16,10 @@
       --slide-shift: 0vw;
       --parallax-x: 0;
       --parallax-y: 0;
+      --flame-warmth: .08;
+      --title-warm-color: var(--gold);
+      --text-warm-color: #fff7d2;
+      --price-warm-color: #b5fff4;
       --code-font: "SF Mono", "SFMono-Regular", "Menlo", "Monaco", "Cascadia Code", "Fira Code", "JetBrains Mono", "Consolas", "Liberation Mono", "Courier New", monospace;
     }
 
@@ -322,8 +326,8 @@
       opacity: 0;
       text-align: center;
       transition: opacity .65s ease, transform .65s ease, filter .65s ease;
-      color: var(--gold);
-      text-shadow: 0 0 10px rgba(246, 207, 115, .9), 0 0 32px rgba(255, 93, 158, .26);
+      color: var(--title-warm-color);
+      text-shadow: 0 0 10px rgba(246, 207, 115, .78), 0 0 24px rgba(255, 155, 53, var(--flame-warmth));
       pointer-events: none;
     }
 
@@ -341,14 +345,17 @@
       font-weight: 400;
       letter-spacing: 0;
       text-transform: uppercase;
+      color: var(--title-warm-color);
+      transition: color .45s ease, text-shadow .45s ease;
     }
 
     .altar-text p {
       margin: 0 auto;
       max-width: 74ch;
-      color: #fff7d2;
+      color: var(--text-warm-color);
       font-size: clamp(12px, 1.55vw, 18px);
       line-height: 1.72;
+      transition: color .45s ease, text-shadow .45s ease;
     }
 
     .accent-blue { color: #76f7ff; }
@@ -359,11 +366,12 @@
       display: inline-block;
       margin-top: 8px;
       padding: 0;
-      color: #b5fff4;
+      color: var(--price-warm-color);
       font-size: clamp(13px, 1.5vw, 18px);
       text-transform: none;
       background: transparent;
       border: 0;
+      transition: color .45s ease, text-shadow .45s ease;
     }
 
     @media (min-width: 900px) {
@@ -599,6 +607,32 @@
 
     @media (max-width: 720px) {
       .object {
+        width: min(66vw, 320px);
+        transform: translateY(clamp(-150px, -21vh, -100px)) scale(var(--scale)) rotateX(var(--tilt, 0deg));
+      }
+
+      .altar-text {
+        bottom: clamp(176px, 22vh, 204px);
+        width: min(88vw, 370px);
+      }
+
+      .altar-text h2 {
+        margin-bottom: 4px;
+        font-size: clamp(18px, 6vw, 24px);
+      }
+
+      .altar-text p {
+        max-width: 38ch;
+        font-size: clamp(8px, 2.2vw, 9px);
+        line-height: 1.26;
+      }
+
+      .price {
+        margin-top: 4px;
+        font-size: clamp(8px, 2.2vw, 9px);
+      }
+
+      .flame-rail {
         width: min(88vw, 520px);
       }
 
@@ -775,6 +809,27 @@
       return ((value % size) + size) % size;
     }
 
+    function mixColor(from, to, amount) {
+      const t = Math.min(1, Math.max(0, amount));
+      return `rgb(${from.map((channel, index) => Math.round(channel + (to[index] - channel) * t)).join(", ")})`;
+    }
+
+    function updateFlameTint() {
+      const activeText = track.querySelector(".panel.is-active .altar-text");
+      const flameRail = document.querySelector(".flame-rail");
+      if (!activeText || !flameRail) return;
+      const textRect = activeText.getBoundingClientRect();
+      const flameRect = flameRail.getBoundingClientRect();
+      const gap = flameRect.top - textRect.bottom;
+      const range = Math.min(260, Math.max(120, height * .34));
+      const closeness = Math.min(1, Math.max(0, 1 - gap / range));
+      const warmth = Math.pow(closeness, 1.45);
+      root.style.setProperty("--flame-warmth", (.08 + warmth * .26).toFixed(3));
+      root.style.setProperty("--title-warm-color", mixColor([246, 207, 115], [255, 173, 76], warmth * .32));
+      root.style.setProperty("--text-warm-color", mixColor([255, 247, 210], [255, 218, 150], warmth * .34));
+      root.style.setProperty("--price-warm-color", mixColor([181, 255, 244], [186, 255, 56], warmth * .22));
+    }
+
     function extendGallery() {
       const originals = [...track.querySelectorAll(".panel")];
       basePanelCount = originals.length;
@@ -816,6 +871,7 @@
         hue: Math.random() > .88 ? "cyan" : Math.random() > .78 ? "gold" : "white"
       }));
       updateScroll();
+      updateFlameTint();
       drawScene();
     }
 
@@ -887,6 +943,7 @@
       panels.forEach((panel, index) => {
         panel.classList.toggle("is-active", index === activeIndex);
       });
+      updateFlameTint();
       drawScene();
       const scrollChanged = Math.abs(window.scrollY - lastScrollY) > 1;
       lastScrollY = window.scrollY;
@@ -904,6 +961,7 @@
       scale = Math.min(7, Math.max(.01, next));
       root.style.setProperty("--scale", scale.toFixed(2));
       zoomRead.textContent = Math.round(scale * 100) + "%";
+      updateFlameTint();
       if (interactionsReady) {
         document.body.classList.add("is-moving");
         window.clearTimeout(movementTimer);
