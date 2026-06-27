@@ -108,15 +108,55 @@
     .zoom-panel button {
       position: relative;
       appearance: none;
-      border: 1px solid rgba(246, 207, 115, .55);
-      background: rgba(1, 4, 12, .48);
+      border: 0;
+      background: transparent;
       color: var(--gold);
-      width: 42px;
-      height: 42px;
-      font: 700 20px/1 var(--code-font);
-      box-shadow: 0 0 20px rgba(246, 207, 115, .16), inset 0 0 14px rgba(112, 255, 232, .08);
+      width: 34px;
+      height: 34px;
+      font-family: var(--code-font);
+      font-size: 0;
+      line-height: 1;
       cursor: pointer;
+      opacity: .72;
+      filter: drop-shadow(0 0 4px rgba(246, 207, 115, .32)) drop-shadow(0 0 14px rgba(246, 207, 115, .18));
       pointer-events: auto;
+      transition: opacity .18s ease, transform .18s ease, color .18s ease, filter .18s ease;
+    }
+
+    .zoom-panel button::before,
+    .zoom-panel button::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 13px;
+      height: 1px;
+      background: currentColor;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 6px rgba(246, 207, 115, .88), 0 0 16px rgba(246, 207, 115, .32);
+    }
+
+    .zoom-panel button::after {
+      width: 1px;
+      height: 13px;
+      opacity: 0;
+    }
+
+    .zoom-panel button[data-zoom="in"]::after {
+      opacity: 1;
+    }
+
+    .zoom-panel button:hover,
+    .zoom-panel button:focus-visible {
+      color: #b5fff4;
+      opacity: 1;
+      filter: drop-shadow(0 0 6px rgba(181, 255, 244, .54)) drop-shadow(0 0 18px rgba(246, 207, 115, .24));
+      outline: 0;
+      transform: scale(1.12);
+    }
+
+    .zoom-panel button:active {
+      transform: scale(.92);
     }
 
     .zoom-cluster {
@@ -124,7 +164,7 @@
       top: 50%;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 2px;
       transform: translateY(-50%);
       pointer-events: auto;
     }
@@ -806,7 +846,6 @@
     let stars = [];
     let panels = [];
     let maxShift = 0;
-    let isLoopingScroll = false;
     let basePanelCount = 0;
     let loopMiddleFloat = 0;
     let currentFloat = 0;
@@ -816,6 +855,8 @@
     let movementTimer = 0;
     let lastBurstAt = 0;
     let lastScrollY = 0;
+    let lastBoundaryLoopAt = 0;
+    let touchStartY = 0;
     let starTime = 0;
     let scrollSurge = 0;
     let targetShiftVw = 0;
@@ -863,9 +904,42 @@
       scrollSpace.style.height = `${Math.max(900, panels.length * 120)}vh`;
     }
 
-    function scrollToFloat(targetFloat) {
-      const scrollable = scrollSpace.offsetHeight - window.innerHeight;
-      window.scrollTo(0, scrollSpace.offsetTop + (targetFloat / maxShift) * scrollable);
+    function getScrollableHeight() {
+      return Math.max(1, scrollSpace.offsetHeight - window.innerHeight);
+    }
+
+    function floatToScrollY(targetFloat) {
+      return scrollSpace.offsetTop + (targetFloat / maxShift) * getScrollableHeight();
+    }
+
+    function scrollToFloat(targetFloat, behavior = "auto") {
+      window.scrollTo({ top: floatToScrollY(targetFloat), behavior });
+    }
+
+    function loopAtBoundary(deltaY) {
+      const now = Date.now();
+      if (!maxShift || now - lastBoundaryLoopAt < 280 || Math.abs(deltaY) < 2) {
+        return false;
+      }
+      const scrollTop = scrollSpace.offsetTop;
+      const scrollBottom = scrollTop + getScrollableHeight();
+      const atStart = window.scrollY <= scrollTop + 2;
+      const atEnd = window.scrollY >= scrollBottom - 2;
+      if (deltaY < 0 && atStart) {
+        lastBoundaryLoopAt = now;
+        scrollToFloat(maxShift);
+        lastScrollY = floatToScrollY(maxShift);
+        scrollSurge = Math.max(scrollSurge, .72);
+        return true;
+      }
+      if (deltaY > 0 && atEnd) {
+        lastBoundaryLoopAt = now;
+        scrollToFloat(0);
+        lastScrollY = floatToScrollY(0);
+        scrollSurge = Math.max(scrollSurge, .72);
+        return true;
+      }
+      return false;
     }
 
     function resize() {
@@ -895,7 +969,7 @@
       starTime = typeof time === "number" ? time * .001 : starTime + .016;
       scrollSurge = Math.max(0, scrollSurge * .9 - .001);
       const rush = 1 + scrollSurge * 5.6;
-      const upwardRush = 1 + scrollSurge * 9;
+      const verticalRush = 1 + scrollSurge * 9;
       displayedShiftVw += (targetShiftVw - displayedShiftVw) * .13;
       if (Math.abs(targetShiftVw - displayedShiftVw) < .01) {
         displayedShiftVw = targetShiftVw;
@@ -919,9 +993,9 @@
 
       const veil = ctx.createLinearGradient(
         wrap(parallaxX * -52 * rush, width),
-        wrap(parallaxY * 124 * upwardRush, height),
+        wrap(parallaxY * -124 * verticalRush, height),
         wrap(width + parallaxX * 36 * rush, width * 2),
-        wrap(height + parallaxY * -132 * upwardRush, height * 2)
+        wrap(height + parallaxY * 132 * verticalRush, height * 2)
       );
       veil.addColorStop(0, "rgba(0,0,0,0)");
       veil.addColorStop(.42, "rgba(186,255,56,.045)");
@@ -932,14 +1006,14 @@
 
       for (const star of stars) {
         const slowDrift = starTime * star.depth * (1 + scrollSurge * 1.2);
-        const flicker = .45 + Math.sin(starTime * (.22 + star.s) + parallaxX * .34 * rush + parallaxY * .31 * rush + star.p) * .35;
-        const x = wrap(star.x - parallaxX * star.depth * 28 * rush + parallaxY * star.depth * 4 * scrollSurge + Math.sin(starTime * .08 + star.p) * star.depth * 8, width);
-        const y = wrap(star.y - parallaxY * star.depth * 220 * upwardRush - slowDrift * 9 + Math.sin(parallaxX * .18 + star.p) * star.depth * 8, height);
+        const flicker = .45 + Math.sin(starTime * (.22 + star.s) + parallaxX * .34 * rush - parallaxY * .31 * rush + star.p) * .35;
+        const x = wrap(star.x - parallaxX * star.depth * 28 * rush - parallaxY * star.depth * 4 * scrollSurge + Math.sin(starTime * .08 + star.p) * star.depth * 8, width);
+        const y = wrap(star.y + parallaxY * star.depth * 220 * verticalRush - slowDrift * 9 + Math.sin(parallaxX * .18 + star.p) * star.depth * 8, height);
         const color = star.hue === "cyan" ? "112,247,255" : star.hue === "gold" ? "246,207,115" : "255,247,210";
         const trail = Math.min(48, scrollSurge * star.depth * 34);
         if (trail > 1) {
           ctx.fillStyle = `rgba(${color},${Math.max(.035, flicker / star.depth * .24)})`;
-          ctx.fillRect(x, y + star.r, Math.max(1, star.r), trail);
+          ctx.fillRect(x, y - trail, Math.max(1, star.r), trail);
         }
         ctx.fillStyle = `rgba(${color},${Math.max(.1, flicker / star.depth)})`;
         ctx.fillRect(x, y, star.r, star.r);
@@ -953,14 +1027,14 @@
 
     function updateScroll() {
       const rect = scrollSpace.getBoundingClientRect();
-      const scrollable = scrollSpace.offsetHeight - window.innerHeight;
+      const scrollable = getScrollableHeight();
       const raw = Math.min(1, Math.max(0, -rect.top / scrollable));
       root.style.setProperty("--progress", raw);
-      targetShiftVw = raw * maxShift * -100;
-      root.style.setProperty("--slide-shift", `${targetShiftVw}vw`);
       currentFloat = raw * maxShift;
+      targetShiftVw = currentFloat * -100;
+      root.style.setProperty("--slide-shift", `${targetShiftVw}vw`);
       parallaxX = currentFloat;
-      parallaxY = window.scrollY / Math.max(1, window.innerHeight);
+      parallaxY = currentFloat / Math.max(1, basePanelCount);
       root.style.setProperty("--parallax-x", parallaxX.toFixed(3));
       root.style.setProperty("--parallax-y", parallaxY.toFixed(3));
       const activeIndex = Math.round(currentFloat);
@@ -999,12 +1073,11 @@
 
     function slide(direction) {
       const rect = scrollSpace.getBoundingClientRect();
-      const scrollable = scrollSpace.offsetHeight - window.innerHeight;
+      const scrollable = getScrollableHeight();
       const current = Math.round(Math.min(1, Math.max(0, -rect.top / scrollable)) * maxShift);
       const baseIndex = wrap(current + direction, basePanelCount);
       const target = loopMiddleFloat + baseIndex;
-      const y = scrollSpace.offsetTop + (target / maxShift) * scrollable;
-      window.scrollTo({ top: y, behavior: "smooth" });
+      scrollToFloat(target, "smooth");
     }
 
     function randomBetween(min, max) {
@@ -1095,6 +1168,22 @@
       if (event.ctrlKey || event.metaKey) {
         event.preventDefault();
         setZoom(scale * (event.deltaY < 0 ? 1.12 : .89));
+        return;
+      }
+      if (loopAtBoundary(event.deltaY)) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+
+    window.addEventListener("touchstart", (event) => {
+      touchStartY = event.touches[0]?.clientY || 0;
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (event) => {
+      const currentY = event.touches[0]?.clientY || touchStartY;
+      const deltaY = touchStartY - currentY;
+      if (loopAtBoundary(deltaY)) {
+        event.preventDefault();
       }
     }, { passive: false });
 
