@@ -310,13 +310,16 @@
       will-change: width, transform, filter;
     }
 
-    body.is-zoomed .panel.is-active .object {
-      --object-y: 0px;
+    .panel.is-active .object {
       cursor: grab;
       touch-action: none;
     }
 
-    body.is-zoomed .panel:not(.is-active) .object {
+    body.is-zoomed .panel.is-active .object {
+      --object-y: 0px;
+    }
+
+    .panel:not(.is-active) .object {
       pointer-events: none;
     }
 
@@ -1300,8 +1303,13 @@
     }
 
     function clampPan() {
-      const limitX = Math.max(0, Math.min(window.innerWidth * 1.45, (scale - 1) * window.innerWidth * .38));
-      const limitY = Math.max(0, Math.min(window.innerHeight * 1.15, (scale - 1) * window.innerHeight * .34));
+      const smallScaleRange = Math.max(.16, Math.min(.34, 1.08 - scale));
+      const limitX = scale <= 1.02
+        ? window.innerWidth * smallScaleRange
+        : Math.min(window.innerWidth * 1.45, (scale - 1) * window.innerWidth * .38);
+      const limitY = scale <= 1.02
+        ? window.innerHeight * smallScaleRange
+        : Math.min(window.innerHeight * 1.15, (scale - 1) * window.innerHeight * .34);
       panX = Math.min(limitX, Math.max(-limitX, panX));
       panY = Math.min(limitY, Math.max(-limitY, panY));
     }
@@ -1495,7 +1503,6 @@
     }
 
     function startPaintingPan(event) {
-      if (scale <= 1.02) return;
       const object = event.target.closest(".object");
       const activePanel = track.querySelector(".panel.is-active");
       if (!object || !activePanel || !activePanel.contains(object)) return;
