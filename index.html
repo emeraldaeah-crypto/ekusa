@@ -289,15 +289,17 @@
     .object {
       position: relative;
       --object-y: 0px;
-      width: min(68vw, 620px);
+      --object-size: min(68vw, 620px);
+      width: var(--zoom-size, var(--object-size));
       aspect-ratio: 1;
       display: grid;
       place-items: center;
-      transform: translate3d(var(--pan-x, 0px), calc(var(--object-y) + var(--pan-y, 0px)), 0) scale(var(--scale)) rotateX(var(--tilt, 0deg));
-      transition: transform .35s ease, filter .35s ease;
+      transform: translate3d(var(--pan-x, 0px), calc(var(--object-y) + var(--pan-y, 0px)), 0) rotateX(var(--tilt, 0deg));
+      transform-origin: 50% 50%;
+      transition: width .35s ease, transform .35s ease, filter .35s ease;
       filter: drop-shadow(0 0 26px rgba(112, 255, 232, .28));
       user-select: none;
-      will-change: transform, filter;
+      will-change: width, transform, filter;
     }
 
     body.is-zoomed .panel.is-active .object {
@@ -390,6 +392,7 @@
     .painting.has-image.cutout-art img {
       height: auto;
       object-fit: contain;
+      image-rendering: auto;
       filter: drop-shadow(0 0 10px rgba(112, 255, 232, .12));
     }
 
@@ -582,7 +585,7 @@
 
     @media (min-width: 900px) {
       .object {
-        width: min(30vw, 300px);
+        --object-size: min(30vw, 300px);
         --object-y: -20vh;
       }
 
@@ -620,7 +623,7 @@
 
     @media (min-width: 680px) and (max-width: 899px) {
       .object {
-        width: min(52vw, 400px);
+        --object-size: min(52vw, 400px);
         --object-y: -14vh;
       }
 
@@ -839,12 +842,12 @@
 
     @media (max-width: 720px) {
       .object {
-        width: min(66vw, 320px);
-        --object-y: clamp(-218px, -30vh, -162px);
+        --object-size: min(66vw, 320px);
+        --object-y: clamp(-188px, -25vh, -132px);
       }
 
       .altar-text {
-        bottom: clamp(118px, 15vh, 146px);
+        bottom: clamp(84px, 11vh, 112px);
         width: min(94vw, 430px);
       }
 
@@ -888,21 +891,21 @@
       }
 
       .zoom-read {
-        top: auto;
-        right: 50%;
-        bottom: 73px;
-        transform: translateX(50%);
+        top: clamp(74px, 10vh, 120px);
+        right: clamp(12px, 2vw, 24px);
+        bottom: auto;
+        transform: none;
       }
     }
 
     @media (max-width: 720px) and (max-height: 700px) {
       .object {
-        width: min(60vw, 285px);
-        --object-y: clamp(-220px, -36vh, -185px);
+        --object-size: min(60vw, 285px);
+        --object-y: clamp(-190px, -31vh, -150px);
       }
 
       .altar-text {
-        bottom: clamp(96px, 13vh, 118px);
+        bottom: clamp(70px, 9vh, 92px);
       }
     }
 
@@ -1204,6 +1207,23 @@
       window.scrollTo({ top: floatToScrollY(targetFloat), behavior });
     }
 
+    function getBaseObjectSize() {
+      if (width <= 720 && height <= 700) {
+        return Math.min(width * .6, 285);
+      }
+      if (width <= 720) {
+        return Math.min(width * .66, 320);
+      }
+      if (width >= 900) {
+        return Math.min(width * .3, 300);
+      }
+      return Math.min(width * .52, 400);
+    }
+
+    function syncObjectSize() {
+      root.style.setProperty("--zoom-size", Math.max(1, getBaseObjectSize() * scale).toFixed(1) + "px");
+    }
+
     function getActiveObject() {
       return track.querySelector(".panel.is-active .object");
     }
@@ -1283,6 +1303,7 @@
         depth: Math.random() * 2.8 + .35,
         hue: Math.random() > .88 ? "cyan" : Math.random() > .78 ? "gold" : "white"
       }));
+      syncObjectSize();
       if (scale > 1.02) {
         clampPan();
         applyPan();
@@ -1391,6 +1412,7 @@
     function setZoom(next) {
       scale = Math.min(7, Math.max(.01, next));
       root.style.setProperty("--scale", scale.toFixed(2));
+      syncObjectSize();
       zoomRead.textContent = Math.round(scale * 100) + "%";
       document.body.classList.toggle("is-zoomed", scale > 1.02);
       if (scale <= 1.02) {
