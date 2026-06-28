@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,6 +20,9 @@
       --title-warm-color: var(--gold);
       --text-warm-color: #fff7d2;
       --price-warm-color: #b5fff4;
+      --object-y: 0px;
+      --pan-x: 0px;
+      --pan-y: 0px;
       --code-font: "SF Mono", "SFMono-Regular", "Menlo", "Monaco", "Cascadia Code", "Fira Code", "JetBrains Mono", "Consolas", "Liberation Mono", "Courier New", monospace;
     }
 
@@ -38,6 +41,15 @@
 
     html {
       scroll-behavior: smooth;
+    }
+
+    html[data-lang="en"] [data-lang-show="ja"],
+    html[data-lang="ja"] [data-lang-show="en"] {
+      display: none !important;
+    }
+
+    [data-lang-show] {
+      animation: languageTextAppear .88s cubic-bezier(.19, .8, .22, 1) both;
     }
 
     body {
@@ -187,6 +199,44 @@
       text-shadow: 0 0 8px #3ff;
     }
 
+    .language-panel {
+      position: fixed;
+      top: clamp(14px, 2.4vh, 24px);
+      left: clamp(14px, 2.4vw, 28px);
+      z-index: 34;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      pointer-events: auto;
+    }
+
+    .language-panel button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: rgba(246, 207, 115, .48);
+      font-family: var(--code-font);
+      font-size: 11px;
+      line-height: 1;
+      padding: 0;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-shadow: 0 0 10px rgba(246, 207, 115, .12);
+      transition: color .2s ease, text-shadow .2s ease, transform .2s ease;
+    }
+
+    .language-panel button.is-active {
+      color: var(--gold);
+      text-shadow: 0 0 8px rgba(246, 207, 115, .62), 0 0 18px rgba(246, 207, 115, .22);
+    }
+
+    .language-panel button:hover,
+    .language-panel button:focus-visible {
+      color: #b5fff4;
+      outline: 0;
+      transform: translateY(-1px);
+    }
+
     .scroll-space {
       position: relative;
       z-index: 1;
@@ -216,6 +266,13 @@
       display: grid;
       place-items: center;
       isolation: isolate;
+      overflow: hidden;
+      contain: paint;
+      z-index: 1;
+    }
+
+    .panel.is-active {
+      z-index: 3;
     }
 
     .panel::before {
@@ -231,13 +288,35 @@
 
     .object {
       position: relative;
+      --object-y: 0px;
       width: min(68vw, 620px);
       aspect-ratio: 1;
       display: grid;
       place-items: center;
-      transform: scale(var(--scale)) rotateX(var(--tilt, 0deg));
+      transform: translate3d(var(--pan-x, 0px), calc(var(--object-y) + var(--pan-y, 0px)), 0) scale(var(--scale)) rotateX(var(--tilt, 0deg));
       transition: transform .35s ease, filter .35s ease;
       filter: drop-shadow(0 0 26px rgba(112, 255, 232, .28));
+      user-select: none;
+      will-change: transform, filter;
+    }
+
+    body.is-zoomed .panel.is-active .object {
+      cursor: grab;
+      touch-action: none;
+    }
+
+    body.is-zoomed .panel:not(.is-active) .object {
+      pointer-events: none;
+    }
+
+    body.is-panning .panel.is-active .object {
+      cursor: grabbing;
+      transition: filter .35s ease;
+    }
+
+    .object img {
+      -webkit-user-drag: none;
+      user-select: none;
     }
 
     .painting {
@@ -277,6 +356,41 @@
       background:
         radial-gradient(circle at 24% 32%, rgba(255, 255, 255, .45), transparent 12%),
         linear-gradient(135deg, transparent 0 32%, rgba(246, 207, 115, .38) 33% 38%, transparent 39% 100%);
+    }
+
+    .painting.has-image {
+      aspect-ratio: 3 / 4;
+      display: grid;
+      place-items: center;
+      background: #050611;
+    }
+
+    .painting.has-image::before,
+    .painting.has-image::after {
+      display: none;
+    }
+
+    .painting.has-image img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .painting.has-image.cutout-art {
+      width: 72%;
+      aspect-ratio: auto;
+      border: 0;
+      background: transparent;
+      overflow: visible;
+      box-shadow: none;
+      filter: drop-shadow(0 0 18px rgba(246, 207, 115, .22)) drop-shadow(0 20px 42px rgba(0, 0, 0, .62));
+    }
+
+    .painting.has-image.cutout-art img {
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px rgba(112, 255, 232, .12));
     }
 
     .relic {
@@ -394,7 +508,12 @@
       letter-spacing: 0;
       text-transform: uppercase;
       color: var(--title-warm-color);
+      text-wrap: balance;
       transition: color .45s ease, text-shadow .45s ease;
+    }
+
+    .altar-text h2.title-lowercase {
+      text-transform: none;
     }
 
     .altar-text p {
@@ -403,7 +522,46 @@
       color: var(--text-warm-color);
       font-size: clamp(12px, 1.55vw, 18px);
       line-height: 1.72;
+      text-align: center;
+      text-wrap: pretty;
+      line-break: normal;
+      overflow-wrap: normal;
+      hyphens: manual;
       transition: color .45s ease, text-shadow .45s ease;
+    }
+
+    .altar-text p[data-lang-show="ja"] {
+      letter-spacing: .035em;
+      line-break: strict;
+      word-break: auto-phrase;
+      line-height: 1.82;
+    }
+
+    .jp-phrase {
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .no-break {
+      white-space: nowrap;
+    }
+
+    .caption-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 3px 12px;
+      margin: 0 auto 8px;
+      max-width: 78ch;
+      color: rgba(246, 207, 115, .82);
+      font-size: clamp(9px, 1vw, 12px);
+      line-height: 1.35;
+      text-transform: none;
+      text-wrap: balance;
+    }
+
+    .caption-meta span {
+      white-space: nowrap;
     }
 
     .accent-blue { color: #76f7ff; }
@@ -425,7 +583,7 @@
     @media (min-width: 900px) {
       .object {
         width: min(30vw, 300px);
-        transform: translateY(-20vh) scale(var(--scale)) rotateX(var(--tilt, 0deg));
+        --object-y: -20vh;
       }
 
       .altar-text {
@@ -444,6 +602,16 @@
         line-height: 1.38;
       }
 
+      .altar-text p[data-lang-show="ja"] {
+        line-height: 1.58;
+      }
+
+      .caption-meta {
+        max-width: 62ch;
+        font-size: clamp(9px, .7vw, 10.5px);
+        margin-bottom: 5px;
+      }
+
       .price {
         margin-top: 6px;
         font-size: clamp(12px, .95vw, 14px);
@@ -453,7 +621,7 @@
     @media (min-width: 680px) and (max-width: 899px) {
       .object {
         width: min(52vw, 400px);
-        transform: translateY(-14vh) scale(var(--scale)) rotateX(var(--tilt, 0deg));
+        --object-y: -14vh;
       }
 
       .altar-text {
@@ -469,6 +637,16 @@
         max-width: 60ch;
         font-size: 12.5px;
         line-height: 1.36;
+      }
+
+      .altar-text p[data-lang-show="ja"] {
+        line-height: 1.56;
+      }
+
+      .caption-meta {
+        max-width: 60ch;
+        font-size: 9.5px;
+        margin-bottom: 5px;
       }
 
       .price {
@@ -653,10 +831,16 @@
       to { transform: translateX(140vw) translateY(-10vh) rotate(360deg); }
     }
 
+    @keyframes languageTextAppear {
+      0% { opacity: 0; filter: blur(5px); transform: translateY(7px); }
+      42% { opacity: .72; filter: blur(.8px); }
+      100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+    }
+
     @media (max-width: 720px) {
       .object {
         width: min(66vw, 320px);
-        transform: translateY(clamp(-150px, -21vh, -100px)) scale(var(--scale)) rotateX(var(--tilt, 0deg));
+        --object-y: clamp(-150px, -21vh, -100px);
       }
 
       .altar-text {
@@ -673,6 +857,19 @@
         max-width: 38ch;
         font-size: clamp(11px, 2.9vw, 12px);
         line-height: 1.28;
+      }
+
+      .altar-text p[data-lang-show="ja"] {
+        letter-spacing: .025em;
+        line-height: 1.46;
+      }
+
+      .caption-meta {
+        max-width: 39ch;
+        gap: 2px 8px;
+        font-size: clamp(8px, 2.1vw, 9px);
+        line-height: 1.22;
+        margin-bottom: 4px;
       }
 
       .price {
@@ -714,6 +911,11 @@
     <div class="logo-mark">ekusadataganawi</div>
   </header>
 
+  <nav class="language-panel" aria-label="Language">
+    <button type="button" data-lang-select="en" class="is-active" aria-pressed="true">EN</button>
+    <button type="button" data-lang-select="ja" aria-pressed="false">JP</button>
+  </nav>
+
   <nav class="zoom-panel" aria-label="Zoom">
     <div class="zoom-cluster zoom-cluster-left">
       <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
@@ -737,12 +939,23 @@
           <article class="panel" data-index="001">
             <div class="random-words"></div>
             <div class="object" style="--c1:#70ffe8;--c2:#ff5d9e;--c3:#1d3fff;">
-              <div class="painting"></div>
+              <div class="painting has-image cutout-art">
+                <img src="baa.png" alt="baa">
+              </div>
             </div>
             <div class="altar-text">
-              <h2>NYX</h2>
-              <p>Born from the first night, this work opens like a field recording of darkness: thin gold syntax, slow signals, and a <span class="accent-blue">blue undercurrent</span> moving behind the surface. It is not a single image so much as a suspended interval, a coded altar where distance keeps folding back into itself and the viewer feels the room become wider than the screen. The painting is meant to be watched slowly, as if the black field were breathing through layers of mineral dust, old monitor light, and a private astronomical notation.</p>
-              <span class="price">ask</span>
+              <h2 class="title-lowercase" data-lang-show="en">baa</h2>
+              <h2 class="title-lowercase" data-lang-show="ja">baa</h2>
+              <div class="caption-meta" data-lang-show="en">
+                <span>oil on canvas,private collection</span>
+              </div>
+              <div class="caption-meta" data-lang-show="ja">
+                <span>oil on canvas,private collection</span>
+              </div>
+              <p data-lang-show="en">Alongside the painting, only the sound <span class="accent-blue">baa</span> first surfaced; in time it revealed itself as Baal. In the Old Testament, Baal appears as a god associated with idolatry, later merging and changing through Baal-zebub, or Beelzebub, the Lord of the Flies, and demonological imagination. In Semitic languages the word means lord, and belongs to the ancient worlds of Canaan, Phoenicia, and Syria. As a divine or spirit name, Baal attaches to storm, sun, fertility, and other forces of nature. Here, a ghost, peekaboo, six layers, a green heptagram, leeches, flame, three triangles, <span class="accent-blue">blue</span> and red, pink and green gather into a bit-like, quantized baa. Gold becomes soil that carries what it will bear.</p>
+              <p data-lang-show="ja"><span class="jp-phrase">絵と共に</span><span class="jp-phrase">baaというおとだけが</span><span class="jp-phrase">浮かんできた、</span><span class="jp-phrase">いつしかそれが</span><span class="jp-phrase">baalだときづく。</span><span class="jp-phrase">バー・baalについて</span><span class="jp-phrase">旧約聖書では</span><span class="jp-phrase">「偶像崇拝」の神、</span><span class="jp-phrase">後世、</span><span class="jp-phrase">バアル・ゼブブ</span><span class="jp-phrase">蠅の王悪魔とも</span><span class="jp-phrase">習合・変化したもの。</span><span class="jp-phrase">セム語で</span><span class="jp-phrase">「主（しゅ）」</span><span class="jp-phrase">古代カナン、</span><span class="jp-phrase">フェニキア、</span><span class="jp-phrase">シリアの存在。</span><span class="jp-phrase">神名・精霊名として、</span><span class="jp-phrase">嵐・太陽・豊穣などの</span><span class="jp-phrase">自然神の「バール」が</span><span class="jp-phrase">冠される。</span><span class="jp-phrase">おばけ、</span><span class="jp-phrase">いないないバー・</span><span class="jp-phrase">6層階層、</span><span class="jp-phrase">緑七芒星、</span><span class="jp-phrase">ヒル、</span><span class="jp-phrase">炎。</span><span class="jp-phrase">三角が3つ。</span><span class="jp-phrase">青と赤。</span><span class="jp-phrase">ピンクと緑。</span><span class="jp-phrase">bit、</span><span class="jp-phrase">量子化されているbaa。</span><span class="jp-phrase">黄金は孕む土。</span></p>
+              <span class="price" data-lang-show="en">ask</span>
+              <span class="price" data-lang-show="ja">ask</span>
             </div>
             <span class="drifter" style="--top:22%;--speed:18s;">◇</span>
           </article>
@@ -753,9 +966,18 @@
               <div class="painting"></div>
             </div>
             <div class="altar-text">
-              <h2>CHAOS</h2>
-              <p>Chaos is treated here as the original space before names, before edges, before a stable horizon. The painting holds still while the layers behind it move in different directions, creating the sense that a <span class="accent-lime">fluorescent green fault line</span> is opening under the stars and the image is only temporarily balanced above it. The long text belongs to the work like a console report from a place that has not finished becoming a place yet.</p>
-              <span class="price">ask</span>
+              <h2 data-lang-show="en">CHAOS</h2>
+              <h2 data-lang-show="ja">カオス</h2>
+              <div class="caption-meta" data-lang-show="en">
+                <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>194 x 162 cm</span>
+              </div>
+              <div class="caption-meta" data-lang-show="ja">
+                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>194 × 162 cm</span>
+              </div>
+              <p data-lang-show="en">Chaos is treated as the original space before names, edges, and a stable horizon. The painting holds still while layers behind it move in different directions, as if a <span class="accent-lime">fluorescent green fault line</span> were opening under the stars.</p>
+              <p data-lang-show="ja"><span class="jp-phrase">名づけられる前、</span><span class="jp-phrase">輪郭の前、</span><span class="jp-phrase">安定した地平の前にある</span><span class="jp-phrase">空間としてのカオス。</span><span class="jp-phrase">絵画は静止しているが、</span><span class="jp-phrase">背後の層は</span><span class="jp-phrase">別々の方向へ動き、</span><span class="jp-phrase">星の下に</span><span class="jp-phrase accent-lime">蛍光黄緑の断層</span><span class="jp-phrase">が開いていくように見える。</span></p>
+              <span class="price" data-lang-show="en">ask</span>
+              <span class="price" data-lang-show="ja">ask</span>
             </div>
             <span class="drifter" style="--top:72%;--speed:22s;">✦</span>
           </article>
@@ -766,9 +988,18 @@
               <div class="painting"></div>
             </div>
             <div class="altar-text">
-              <h2>OSIRIS</h2>
-              <p>A reconstruction myth, a body of light assembled from fragments, panels, and false coordinates. The work appears as a ceremonial print drifting through black space, with <span class="accent-orange">orange heat</span> at the edges and a grave gold register in the center, priced as an impossible object rather than a simple edition. Its surface suggests something recovered from a river of data: damaged, sacred, overvalued, and still carrying a pulse.</p>
-              <span class="price">¥100,000,000+</span>
+              <h2 data-lang-show="en">OSIRIS</h2>
+              <h2 data-lang-show="ja">オシリス</h2>
+              <div class="caption-meta" data-lang-show="en">
+                <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>227 x 182 cm</span>
+              </div>
+              <div class="caption-meta" data-lang-show="ja">
+                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>227 × 182 cm</span>
+              </div>
+              <p data-lang-show="en">A reconstruction myth, a body of light assembled from fragments, panels, and false coordinates. The surface carries <span class="accent-orange">orange heat</span> at the edges and a grave gold register at the center, like something recovered from a river of data.</p>
+              <p data-lang-show="ja"><span class="jp-phrase">断片、画面、偽の座標から</span><span class="jp-phrase">組み上げられた</span><span class="jp-phrase">光の身体。</span><span class="jp-phrase">再構成の神話として現れ、</span><span class="jp-phrase">縁には</span><span class="jp-phrase accent-orange">橙色の熱</span><span class="jp-phrase">、中心には</span><span class="jp-phrase">重い金色の記録を宿す。</span><span class="jp-phrase">データの川から回収された、</span><span class="jp-phrase">傷ついた聖遺物のような絵画。</span></p>
+              <span class="price" data-lang-show="en">¥100,000,000+</span>
+              <span class="price" data-lang-show="ja">1億円以上</span>
             </div>
             <span class="drifter" style="--top:34%;--speed:16s;">+</span>
           </article>
@@ -779,9 +1010,18 @@
               <div class="painting"></div>
             </div>
             <div class="altar-text">
-              <h2>HERMES</h2>
-              <p>Hermes carries the message sideways, never straight, slipping between the artwork, the interface, and the viewer's hand. The text behaves like a transmission log: mostly gold, occasionally interrupted by <span class="accent-blue">electric blue notation</span>, while the flames below keep appearing and vanishing like packets of heat in a game world. It is a messenger piece, but the message is delayed on purpose, stretched into a corridor where reading and scrolling become the same ritual.</p>
-              <span class="price">ask</span>
+              <h2 data-lang-show="en">HERMES</h2>
+              <h2 data-lang-show="ja">ヘルメス</h2>
+              <div class="caption-meta" data-lang-show="en">
+                <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>145.5 x 112 cm</span>
+              </div>
+              <div class="caption-meta" data-lang-show="ja">
+                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>145.5 × 112 cm</span>
+              </div>
+              <p data-lang-show="en">Hermes carries the message sideways, slipping between the artwork, the interface, and the viewer's hand. Mostly gold text is interrupted by <span class="accent-blue">electric blue notation</span>, while the flames below appear and vanish like packets of heat.</p>
+              <p data-lang-show="ja"><span class="jp-phrase">ヘルメスはメッセージを</span><span class="jp-phrase">まっすぐではなく横へ運ぶ。</span><span class="jp-phrase">作品、インターフェイス、</span><span class="jp-phrase">見る人の手のあいだを</span><span class="jp-phrase">すり抜け、</span><span class="jp-phrase">金色の文字列に</span><span class="jp-phrase accent-blue">電気的な青い注記</span><span class="jp-phrase">が差し込まれる。</span><span class="jp-phrase">読むこととスクロールが</span><span class="jp-phrase">同じ儀式になる作品。</span></p>
+              <span class="price" data-lang-show="en">ask</span>
+              <span class="price" data-lang-show="ja">ask</span>
             </div>
             <span class="drifter" style="--top:18%;--speed:24s;">E</span>
           </article>
@@ -792,9 +1032,18 @@
               <div class="painting"></div>
             </div>
             <div class="altar-text">
-              <h2>ISIS</h2>
-              <p>Isis gathers broken color into a protective field. The image is quiet, but the surrounding space is not: small parallax layers pull in vertical and horizontal directions at once, and a <span class="accent-lime">green pulse</span> appears like a hidden restoration spell written in programming font. The longer the viewer stays with it, the more the painting feels less like an object and more like an instruction for holding fragments together without fully repairing them.</p>
-              <span class="price">ask</span>
+              <h2 data-lang-show="en">ISIS</h2>
+              <h2 data-lang-show="ja">イシス</h2>
+              <div class="caption-meta" data-lang-show="en">
+                <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>162 x 162 cm</span>
+              </div>
+              <div class="caption-meta" data-lang-show="ja">
+                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>162 × 162 cm</span>
+              </div>
+              <p data-lang-show="en">Isis gathers broken color into a protective field. The image is quiet, but the surrounding space is active: parallax layers pull in vertical and horizontal directions, and a <span class="accent-lime">green pulse</span> appears like a hidden restoration spell.</p>
+              <p data-lang-show="ja"><span class="jp-phrase">イシスは砕けた色を</span><span class="jp-phrase">保護する場へ集める。</span><span class="jp-phrase">画面は静かだが、</span><span class="jp-phrase">周囲の空間は動き続ける。</span><span class="jp-phrase">上下左右へ引かれる</span><span class="jp-phrase">層のなかに、</span><span class="jp-phrase">修復の呪文のような</span><span class="jp-phrase accent-lime">緑の脈動</span><span class="jp-phrase">が現れる。</span></p>
+              <span class="price" data-lang-show="en">ask</span>
+              <span class="price" data-lang-show="ja">ask</span>
             </div>
             <span class="drifter" style="--top:62%;--speed:19s;">※</span>
           </article>
@@ -805,9 +1054,18 @@
               <div class="painting"></div>
             </div>
             <div class="altar-text">
-              <h2>HELIOS</h2>
-              <p>Helios is the eye of scale. At one hundred percent it reads as a painting, but at one percent it becomes a distant artifact, almost lost inside the field; at extreme magnification it turns into texture, grain, and coded weather. The gold typography stays calm while <span class="accent-orange">solar orange</span> leaks through the abstract surface. This work is about distance as a material: the small version is not a thumbnail, it is a faraway body.</p>
-              <span class="price">ask</span>
+              <h2 data-lang-show="en">HELIOS</h2>
+              <h2 data-lang-show="ja">ヘリオス</h2>
+              <div class="caption-meta" data-lang-show="en">
+                <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>130 x 97 cm</span>
+              </div>
+              <div class="caption-meta" data-lang-show="ja">
+                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>130 × 97 cm</span>
+              </div>
+              <p data-lang-show="en">Helios is the eye of scale. At one hundred percent it reads as a painting; at one percent it becomes a distant artifact, almost lost inside the field. Gold typography remains calm while <span class="accent-orange">solar orange</span> leaks through the surface.</p>
+              <p data-lang-show="ja"><span class="jp-phrase">ヘリオスはスケールの眼である。</span><span class="jp-phrase">100%では絵画として現れ、</span><span class="jp-phrase">1%では場のなかに</span><span class="jp-phrase">ほとんど失われた</span><span class="jp-phrase">遠い人工物になる。</span><span class="jp-phrase">金色のタイポグラフィは</span><span class="jp-phrase">静かに保たれ、</span><span class="jp-phrase">表面から</span><span class="jp-phrase accent-orange">太陽の橙色</span><span class="jp-phrase">が漏れ出す。</span></p>
+              <span class="price" data-lang-show="en">ask</span>
+              <span class="price" data-lang-show="ja">ask</span>
             </div>
             <span class="drifter" style="--top:44%;--speed:15s;">⬡</span>
           </article>
@@ -818,9 +1076,18 @@
               <div class="painting"></div>
             </div>
             <div class="altar-text">
-              <h2>ANUBIS</h2>
-              <p>Anubis marks no ending. The sequence loops both left and right, sending each painting past the viewer as if weighed, archived, and released again into the same infinite corridor. The background parallax moves like a dark river, and the gold text returns with small flashes of <span class="accent-blue">blue</span>, <span class="accent-lime">acid green</span>, and <span class="accent-orange">ember orange</span>. The work refuses a final door; it keeps the viewer inside a measured passage, where every image has already passed once and is still arriving.</p>
-              <span class="price">ask</span>
+              <h2 data-lang-show="en">ANUBIS</h2>
+              <h2 data-lang-show="ja">アヌビス</h2>
+              <div class="caption-meta" data-lang-show="en">
+                <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>180 x 140 cm</span>
+              </div>
+              <div class="caption-meta" data-lang-show="ja">
+                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>180 × 140 cm</span>
+              </div>
+              <p data-lang-show="en">Anubis marks no ending. Each painting passes the viewer as if weighed, archived, and released again into the same infinite corridor. Gold text returns with flashes of <span class="accent-blue">blue</span>, <span class="accent-lime">acid green</span>, and <span class="accent-orange">ember orange</span>.</p>
+              <p data-lang-show="ja"><span class="jp-phrase">アヌビスは終わりを示さない。</span><span class="jp-phrase">絵画は秤にかけられ、</span><span class="jp-phrase">記録され、</span><span class="jp-phrase">同じ無限の回廊へ</span><span class="jp-phrase">再び放たれるように</span><span class="jp-phrase">通過する。</span><span class="jp-phrase">金色の文字には</span><span class="jp-phrase accent-blue">青</span><span class="jp-phrase">、</span><span class="jp-phrase accent-lime">酸性の緑</span><span class="jp-phrase">、</span><span class="jp-phrase accent-orange">熾火の橙</span><span class="jp-phrase">が小さく点滅する。</span></p>
+              <span class="price" data-lang-show="en">ask</span>
+              <span class="price" data-lang-show="ja">ask</span>
             </div>
             <span class="drifter" style="--top:28%;--speed:17s;">◎</span>
           </article>
@@ -861,6 +1128,16 @@
     let scrollSurge = 0;
     let targetShiftVw = 0;
     let displayedShiftVw = 0;
+    let panX = 0;
+    let panY = 0;
+    let panStartX = 0;
+    let panStartY = 0;
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+    let panPointerId = null;
+    let panTarget = null;
+    let isPanning = false;
+    let lastActiveIndex = -1;
 
     function wrap(value, size) {
       return ((value % size) + size) % size;
@@ -916,6 +1193,41 @@
       window.scrollTo({ top: floatToScrollY(targetFloat), behavior });
     }
 
+    function getActiveObject() {
+      return track.querySelector(".panel.is-active .object");
+    }
+
+    function clearPanStyle(object) {
+      if (!object) return;
+      object.style.removeProperty("--pan-x");
+      object.style.removeProperty("--pan-y");
+    }
+
+    function applyPan(target = getActiveObject()) {
+      if (panTarget && panTarget !== target) {
+        clearPanStyle(panTarget);
+      }
+      panTarget = target;
+      if (!target) return;
+      target.style.setProperty("--pan-x", panX.toFixed(1) + "px");
+      target.style.setProperty("--pan-y", panY.toFixed(1) + "px");
+    }
+
+    function clampPan() {
+      const limitX = Math.max(0, Math.min(window.innerWidth * 1.45, (scale - 1) * window.innerWidth * .38));
+      const limitY = Math.max(0, Math.min(window.innerHeight * 1.15, (scale - 1) * window.innerHeight * .34));
+      panX = Math.min(limitX, Math.max(-limitX, panX));
+      panY = Math.min(limitY, Math.max(-limitY, panY));
+    }
+
+    function resetPan() {
+      panX = 0;
+      panY = 0;
+      clearPanStyle(panTarget);
+      clearPanStyle(getActiveObject());
+      panTarget = null;
+    }
+
     function loopAtBoundary(deltaY) {
       const now = Date.now();
       if (!maxShift || now - lastBoundaryLoopAt < 280 || Math.abs(deltaY) < 2) {
@@ -960,6 +1272,10 @@
         depth: Math.random() * 2.8 + .35,
         hue: Math.random() > .88 ? "cyan" : Math.random() > .78 ? "gold" : "white"
       }));
+      if (scale > 1.02) {
+        clampPan();
+        applyPan();
+      }
       updateScroll();
       updateFlameTint();
       drawScene();
@@ -1041,6 +1357,10 @@
       panels.forEach((panel, index) => {
         panel.classList.toggle("is-active", index === activeIndex);
       });
+      if (lastActiveIndex !== -1 && activeIndex !== lastActiveIndex) {
+        resetPan();
+      }
+      lastActiveIndex = activeIndex;
       const scrollDelta = Math.abs(window.scrollY - lastScrollY);
       scrollSurge = Math.min(1.25, Math.max(scrollSurge, scrollDelta / 80));
       updateFlameTint();
@@ -1061,6 +1381,13 @@
       scale = Math.min(7, Math.max(.01, next));
       root.style.setProperty("--scale", scale.toFixed(2));
       zoomRead.textContent = Math.round(scale * 100) + "%";
+      document.body.classList.toggle("is-zoomed", scale > 1.02);
+      if (scale <= 1.02) {
+        resetPan();
+      } else {
+        clampPan();
+        applyPan();
+      }
       updateFlameTint();
       if (interactionsReady) {
         document.body.classList.add("is-moving");
@@ -1069,6 +1396,39 @@
           document.body.classList.remove("is-moving");
         }, 260);
       }
+    }
+
+    function startPaintingPan(event) {
+      if (scale <= 1.02) return;
+      const object = event.target.closest(".object");
+      const activePanel = track.querySelector(".panel.is-active");
+      if (!object || !activePanel || !activePanel.contains(object)) return;
+      event.preventDefault();
+      isPanning = true;
+      panPointerId = event.pointerId;
+      panTarget = object;
+      pointerStartX = event.clientX;
+      pointerStartY = event.clientY;
+      panStartX = panX;
+      panStartY = panY;
+      document.body.classList.add("is-panning");
+      object.setPointerCapture?.(event.pointerId);
+    }
+
+    function movePaintingPan(event) {
+      if (!isPanning || event.pointerId !== panPointerId) return;
+      event.preventDefault();
+      panX = panStartX + event.clientX - pointerStartX;
+      panY = panStartY + event.clientY - pointerStartY;
+      clampPan();
+      applyPan(panTarget);
+    }
+
+    function endPaintingPan(event) {
+      if (!isPanning || event.pointerId !== panPointerId) return;
+      isPanning = false;
+      panPointerId = null;
+      document.body.classList.remove("is-panning");
     }
 
     function slide(direction) {
@@ -1147,6 +1507,22 @@
       });
     }
 
+    function setLanguage(lang) {
+      const selected = lang === "ja" ? "ja" : "en";
+      root.dataset.lang = selected;
+      root.setAttribute("lang", selected);
+      document.querySelectorAll("[data-lang-select]").forEach((button) => {
+        const isActive = button.dataset.langSelect === selected;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-pressed", String(isActive));
+      });
+      updateFlameTint();
+    }
+
+    document.querySelectorAll("[data-lang-select]").forEach((button) => {
+      button.addEventListener("click", () => setLanguage(button.dataset.langSelect));
+    });
+
     document.querySelectorAll("[data-zoom]").forEach((button) => {
       button.addEventListener("click", () => {
         setZoom(scale * (button.dataset.zoom === "in" ? 1.45 : .69));
@@ -1175,11 +1551,17 @@
       }
     }, { passive: false });
 
+    track.addEventListener("pointerdown", startPaintingPan);
+    window.addEventListener("pointermove", movePaintingPan, { passive: false });
+    window.addEventListener("pointerup", endPaintingPan);
+    window.addEventListener("pointercancel", endPaintingPan);
+
     window.addEventListener("touchstart", (event) => {
       touchStartY = event.touches[0]?.clientY || 0;
     }, { passive: true });
 
     window.addEventListener("touchmove", (event) => {
+      if (isPanning) return;
       const currentY = event.touches[0]?.clientY || touchStartY;
       const deltaY = touchStartY - currentY;
       if (loopAtBoundary(deltaY)) {
