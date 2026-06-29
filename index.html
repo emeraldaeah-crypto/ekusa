@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-lang="en" data-text="shown">
+<html lang="en" data-lang="en" data-text="hidden">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -311,6 +311,10 @@
       will-change: width, transform, filter;
     }
 
+    .panel[data-index="001"] .object {
+      --object-y: 0px;
+    }
+
     .panel.is-active .object {
       cursor: grab;
       touch-action: none;
@@ -501,7 +505,8 @@
       bottom: clamp(22px, 5.8vh, 62px);
       z-index: 6;
       width: min(86vw, 760px);
-      transform: translate(-50%, 26px) scale(.96);
+      transform: translate(-50%, 26px) perspective(840px) rotateX(9deg) scaleX(.94) scaleY(.98);
+      transform-origin: 50% 100%;
       opacity: 0;
       text-align: center;
       transition: opacity .65s ease, transform .65s ease, filter .65s ease;
@@ -512,13 +517,13 @@
 
     .panel.is-active .altar-text {
       opacity: 1;
-      transform: translate(-50%, 0) scale(1);
+      transform: translate(-50%, 0) perspective(840px) rotateX(9deg) scaleX(.94) scaleY(.98);
       filter: brightness(1.15);
     }
 
     html[data-text="hidden"] .panel.is-active .altar-text {
       opacity: 0;
-      transform: translate(-50%, 18px) scale(.98);
+      transform: translate(-50%, 18px) perspective(840px) rotateX(9deg) scaleX(.92) scaleY(.96);
       filter: blur(8px) brightness(.8);
     }
 
@@ -757,6 +762,19 @@
 
     .pixel-flame[data-side="right"] {
       animation-delay: -.91s;
+    }
+
+    body.is-text-emerging .pixel-flame {
+      animation-duration: 1.05s;
+      filter: drop-shadow(0 0 18px rgba(255, 77, 28, .95)) drop-shadow(0 0 58px rgba(255, 218, 87, .74)) drop-shadow(0 0 96px rgba(112, 255, 232, .2));
+    }
+
+    body.is-text-emerging .pixel-flame::before {
+      animation-duration: .82s;
+    }
+
+    body.is-text-emerging .pixel-flame::after {
+      animation-duration: .96s;
     }
 
     .pixel-flame::before {
@@ -1021,7 +1039,7 @@
   <nav class="language-panel" aria-label="Language">
     <button type="button" data-lang-select="en" class="is-active" aria-pressed="true">EN</button>
     <button type="button" data-lang-select="ja" aria-pressed="false">JP</button>
-    <button type="button" data-text-toggle class="is-active" aria-pressed="true">TEXT</button>
+    <button type="button" data-text-toggle aria-pressed="false">TEXT</button>
   </nav>
 
   <nav class="zoom-panel" aria-label="Zoom">
@@ -1055,10 +1073,10 @@
               <h2 class="title-lowercase" data-lang-show="en">baa</h2>
               <h2 class="title-lowercase" data-lang-show="ja">baa</h2>
               <div class="caption-meta" data-lang-show="en">
-                <span>oil on canvas,private collection</span><span>approx. 162 x 130 cm</span>
+                <span>2026</span><span>oil on canvas</span><span>approx. 162 x 130 cm</span>
               </div>
               <div class="caption-meta" data-lang-show="ja">
-                <span>oil on canvas,private collection</span><span>approx. 162 x 130 cm</span>
+                <span>2026</span><span>oil on canvas</span><span>approx. 162 x 130 cm</span>
               </div>
               <p data-lang-show="en">Alongside the painting, only the sound <span class="accent-blue">baa</span> first surfaced; in time it revealed itself as Baal. In the Old Testament, Baal appears as a god associated with idolatry, later merging and changing through Baal-zebub, or Beelzebub, the Lord of the Flies, and demonological imagination. In Semitic languages the word means lord, and belongs to the ancient worlds of Canaan, Phoenicia, and Syria. As a divine or spirit name, Baal attaches to storm, sun, fertility, and other forces of nature. Here, a ghost, peekaboo, six layers, a green heptagram, leeches, flame, three triangles, <span class="accent-blue">blue</span> and red, pink and green gather into a bit-like, quantized baa. Gold becomes soil that carries what it will bear.</p>
               <p data-lang-show="ja"><span class="jp-phrase">絵と共に</span><span class="jp-phrase">baaというおとだけが</span><span class="jp-phrase">浮かんできた、</span><span class="jp-phrase">いつしかそれが</span><span class="jp-phrase">baalだときづく。</span><span class="jp-phrase">バー・baalについて</span><span class="jp-phrase">旧約聖書では</span><span class="jp-phrase">「偶像崇拝」の神、</span><span class="jp-phrase">後世、</span><span class="jp-phrase">バアル・ゼブブ</span><span class="jp-phrase">蠅の王悪魔とも</span><span class="jp-phrase">習合・変化したもの。</span><span class="jp-phrase">セム語で</span><span class="jp-phrase">「主（しゅ）」</span><span class="jp-phrase">古代カナン、</span><span class="jp-phrase">フェニキア、</span><span class="jp-phrase">シリアの存在。</span><span class="jp-phrase">神名・精霊名として、</span><span class="jp-phrase">嵐・太陽・豊穣などの</span><span class="jp-phrase">自然神の「バール」が</span><span class="jp-phrase">冠される。</span><span class="jp-phrase">おばけ、</span><span class="jp-phrase">いないないバー・</span><span class="jp-phrase">6層階層、</span><span class="jp-phrase">緑七芒星、</span><span class="jp-phrase">ヒル、</span><span class="jp-phrase">炎。</span><span class="jp-phrase">三角が3つ。</span><span class="jp-phrase">青と赤。</span><span class="jp-phrase">ピンクと緑。</span><span class="jp-phrase">bit、</span><span class="jp-phrase">量子化されているbaa。</span><span class="jp-phrase">黄金は孕む土。</span></p>
@@ -1075,12 +1093,12 @@
             </div>
             <div class="altar-text">
               <h2 data-lang-show="en">CHAOS</h2>
-              <h2 data-lang-show="ja">カオス</h2>
+              <h2 data-lang-show="ja">CHAOS</h2>
               <div class="caption-meta" data-lang-show="en">
                 <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>194 x 162 cm</span>
               </div>
               <div class="caption-meta" data-lang-show="ja">
-                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>194 × 162 cm</span>
+                <span>2026</span><span>Oil on canvas</span><span>194 x 162 cm</span>
               </div>
               <p data-lang-show="en">Chaos is treated as the original space before names, edges, and a stable horizon. The painting holds still while layers behind it move in different directions, as if a <span class="accent-lime">fluorescent green fault line</span> were opening under the stars.</p>
               <p data-lang-show="ja"><span class="jp-phrase">名づけられる前、</span><span class="jp-phrase">輪郭の前、</span><span class="jp-phrase">安定した地平の前にある</span><span class="jp-phrase">空間としてのカオス。</span><span class="jp-phrase">絵画は静止しているが、</span><span class="jp-phrase">背後の層は</span><span class="jp-phrase">別々の方向へ動き、</span><span class="jp-phrase">星の下に</span><span class="jp-phrase accent-lime">蛍光黄緑の断層</span><span class="jp-phrase">が開いていくように見える。</span></p>
@@ -1097,12 +1115,12 @@
             </div>
             <div class="altar-text">
               <h2 data-lang-show="en">OSIRIS</h2>
-              <h2 data-lang-show="ja">オシリス</h2>
+              <h2 data-lang-show="ja">OSIRIS</h2>
               <div class="caption-meta" data-lang-show="en">
                 <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>227 x 182 cm</span>
               </div>
               <div class="caption-meta" data-lang-show="ja">
-                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>227 × 182 cm</span>
+                <span>2026</span><span>Oil on canvas</span><span>227 x 182 cm</span>
               </div>
               <p data-lang-show="en">A reconstruction myth, a body of light assembled from fragments, panels, and false coordinates. The surface carries <span class="accent-orange">orange heat</span> at the edges and a grave gold register at the center, like something recovered from a river of data.</p>
               <p data-lang-show="ja"><span class="jp-phrase">断片、画面、偽の座標から</span><span class="jp-phrase">組み上げられた</span><span class="jp-phrase">光の身体。</span><span class="jp-phrase">再構成の神話として現れ、</span><span class="jp-phrase">縁には</span><span class="jp-phrase accent-orange">橙色の熱、</span><span class="jp-phrase">中心には</span><span class="jp-phrase">重い金色の記録を宿す。</span><span class="jp-phrase">データの川から回収された、</span><span class="jp-phrase">傷ついた聖遺物のような絵画。</span></p>
@@ -1119,12 +1137,12 @@
             </div>
             <div class="altar-text">
               <h2 data-lang-show="en">HERMES</h2>
-              <h2 data-lang-show="ja">ヘルメス</h2>
+              <h2 data-lang-show="ja">HERMES</h2>
               <div class="caption-meta" data-lang-show="en">
                 <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>145.5 x 112 cm</span>
               </div>
               <div class="caption-meta" data-lang-show="ja">
-                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>145.5 × 112 cm</span>
+                <span>2026</span><span>Oil on canvas</span><span>145.5 x 112 cm</span>
               </div>
               <p data-lang-show="en">Hermes carries the message sideways, slipping between the artwork, the interface, and the viewer's hand. Mostly gold text is interrupted by <span class="accent-blue">electric blue notation</span>, while the flames below appear and vanish like packets of heat.</p>
               <p data-lang-show="ja"><span class="jp-phrase">ヘルメスはメッセージを</span><span class="jp-phrase">まっすぐではなく横へ運ぶ。</span><span class="jp-phrase">作品、インターフェイス、</span><span class="jp-phrase">見る人の手のあいだを</span><span class="jp-phrase">すり抜け、</span><span class="jp-phrase">金色の文字列に</span><span class="jp-phrase accent-blue">電気的な青い注記</span><span class="jp-phrase">が差し込まれる。</span><span class="jp-phrase">読むこととスクロールが</span><span class="jp-phrase">同じ儀式になる作品。</span></p>
@@ -1141,12 +1159,12 @@
             </div>
             <div class="altar-text">
               <h2 data-lang-show="en">ISIS</h2>
-              <h2 data-lang-show="ja">イシス</h2>
+              <h2 data-lang-show="ja">ISIS</h2>
               <div class="caption-meta" data-lang-show="en">
                 <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>162 x 162 cm</span>
               </div>
               <div class="caption-meta" data-lang-show="ja">
-                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>162 × 162 cm</span>
+                <span>2026</span><span>Oil on canvas</span><span>162 x 162 cm</span>
               </div>
               <p data-lang-show="en">Isis gathers broken color into a protective field. The image is quiet, but the surrounding space is active: parallax layers pull in vertical and horizontal directions, and a <span class="accent-lime">green pulse</span> appears like a hidden restoration spell.</p>
               <p data-lang-show="ja"><span class="jp-phrase">イシスは砕けた色を</span><span class="jp-phrase">保護する場へ集める。</span><span class="jp-phrase">画面は静かだが、</span><span class="jp-phrase">周囲の空間は動き続ける。</span><span class="jp-phrase">上下左右へ引かれる</span><span class="jp-phrase">層のなかに、</span><span class="jp-phrase">修復の呪文のような</span><span class="jp-phrase accent-lime">緑の脈動</span><span class="jp-phrase">が現れる。</span></p>
@@ -1163,12 +1181,12 @@
             </div>
             <div class="altar-text">
               <h2 data-lang-show="en">HELIOS</h2>
-              <h2 data-lang-show="ja">ヘリオス</h2>
+              <h2 data-lang-show="ja">HELIOS</h2>
               <div class="caption-meta" data-lang-show="en">
                 <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>130 x 97 cm</span>
               </div>
               <div class="caption-meta" data-lang-show="ja">
-                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>130 × 97 cm</span>
+                <span>2026</span><span>Oil on canvas</span><span>130 x 97 cm</span>
               </div>
               <p data-lang-show="en">Helios is the eye of scale. At one hundred percent it reads as a painting; at one percent it becomes a distant artifact, almost lost inside the field. Gold typography remains calm while <span class="accent-orange">solar orange</span> leaks through the surface.</p>
               <p data-lang-show="ja"><span class="jp-phrase">ヘリオスはスケールの眼である。</span><span class="jp-phrase">100%では絵画として現れ、</span><span class="jp-phrase">1%では場のなかに</span><span class="jp-phrase">ほとんど失われた</span><span class="jp-phrase">遠い人工物になる。</span><span class="jp-phrase">金色のタイポグラフィは</span><span class="jp-phrase">静かに保たれ、</span><span class="jp-phrase">表面から</span><span class="jp-phrase accent-orange">太陽の橙色</span><span class="jp-phrase">が漏れ出す。</span></p>
@@ -1185,12 +1203,12 @@
             </div>
             <div class="altar-text">
               <h2 data-lang-show="en">ANUBIS</h2>
-              <h2 data-lang-show="ja">アヌビス</h2>
+              <h2 data-lang-show="ja">ANUBIS</h2>
               <div class="caption-meta" data-lang-show="en">
                 <span>ekusadataganawi</span><span>2026</span><span>Oil on canvas</span><span>180 x 140 cm</span>
               </div>
               <div class="caption-meta" data-lang-show="ja">
-                <span>エクサダタガナウィ</span><span>2026年</span><span>キャンバスに油彩</span><span>180 × 140 cm</span>
+                <span>2026</span><span>Oil on canvas</span><span>180 x 140 cm</span>
               </div>
               <p data-lang-show="en">Anubis marks no ending. Each painting passes the viewer as if weighed, archived, and released again into the same infinite corridor. Gold text returns with flashes of <span class="accent-blue">blue</span>, <span class="accent-lime">acid green</span>, and <span class="accent-orange">ember orange</span>.</p>
               <p data-lang-show="ja"><span class="jp-phrase">アヌビスは終わりを示さない。</span><span class="jp-phrase">絵画は秤にかけられ、</span><span class="jp-phrase">記録され、</span><span class="jp-phrase">同じ無限の回廊へ</span><span class="jp-phrase">再び放たれるように</span><span class="jp-phrase">通過する。</span><span class="jp-phrase">金色の文字には</span><span class="jp-phrase accent-blue">青、</span><span class="jp-phrase accent-lime">酸性の緑、</span><span class="jp-phrase accent-orange">熾火の橙</span><span class="jp-phrase">が小さく点滅する。</span></p>
@@ -1250,8 +1268,9 @@
     let panTarget = null;
     let isPanning = false;
     let lastActiveIndex = -1;
-    let textVisible = true;
-    let lastTextToggleAt = 0;
+    let textVisible = false;
+    let textEmergenceTimer = 0;
+    let textEmergenceUntil = 0;
 
     function wrap(value, size) {
       return ((value % size) + size) % size;
@@ -1600,14 +1619,18 @@
       if (now - lastBurstAt < 38) return;
       lastBurstAt = now;
       const mobileLight = width <= 720;
+      const textFineBits = now < textEmergenceUntil;
       const colors = ["#fff9d6", "#ffe77d", "#ffc145", "#ff8a24", "#ff4e25", "#b6132e", "#6efee6"];
       document.querySelectorAll(".pixel-flame").forEach((flame) => {
         const side = flame.dataset.side || "left";
-        const count = Math.max(1, Math.round(randomBetween(1, (mobileLight ? 1.4 : 3) + strength * (mobileLight ? 1.35 : 3))));
+        const count = Math.max(1, Math.round(randomBetween(
+          textFineBits ? 3 : 1,
+          (mobileLight ? 1.4 : 3) + strength * (mobileLight ? 1.35 : 3) + (textFineBits ? 6 : 0)
+        )));
         for (let i = 0; i < count; i += 1) {
           const particle = document.createElement("i");
           particle.className = "flame-particle";
-          const size = Math.round(randomBetween(2, 9));
+          const size = Math.round(randomBetween(textFineBits ? 1 : 2, textFineBits ? 5 : 9));
           const x = Math.round(randomBetween(side === "left" ? 7 : 12, side === "left" ? 55 : 62));
           const bottom = Math.round(randomBetween(0, 42));
           const dx = Math.round(randomBetween(side === "left" ? -42 : -24, side === "left" ? 24 : 42));
@@ -1678,16 +1701,21 @@
         button.classList.toggle("is-active", visible);
         button.setAttribute("aria-pressed", String(visible));
       });
+      if (visible) {
+        textEmergenceUntil = Date.now() + 1350;
+        document.body.classList.add("is-text-emerging");
+        window.clearTimeout(textEmergenceTimer);
+        textEmergenceTimer = window.setTimeout(() => {
+          document.body.classList.remove("is-text-emerging");
+        }, 1350);
+        for (let i = 0; i < 4; i += 1) {
+          window.setTimeout(() => emitFlameBurst(2.4), i * 120);
+        }
+      }
     }
 
     function handleTextToggleTap() {
-      const now = Date.now();
-      if (now - lastTextToggleAt < 460) {
-        setTextVisible(!textVisible);
-        lastTextToggleAt = 0;
-        return;
-      }
-      lastTextToggleAt = now;
+      setTextVisible(!textVisible);
     }
 
     document.querySelectorAll("[data-lang-select]").forEach((button) => {
